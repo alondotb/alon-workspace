@@ -1,0 +1,168 @@
+{
+  "generated_from": "Notion \u2192 Tool Inventory",
+  "generated_at": "2026-02-22T14:01:18.552867",
+  "tools": [
+    {
+      "name": "Claude Code",
+      "connections": [
+        "Claude Code",
+        "Automation",
+        "Docs/Files",
+        "Notion",
+        "Code/Dev"
+      ],
+      "core": true,
+      "integrated": true
+    },
+    {
+      "name": "Figma",
+      "connections": [
+        "Docs/Files",
+        "Sites/Web",
+        "Design"
+      ],
+      "core": true,
+      "integrated": false
+    },
+    {
+      "name": "Lovable",
+      "connections": [
+        "Sites/Web",
+        "Design",
+        "Code/Dev"
+      ],
+      "core": true,
+      "integrated": false
+    },
+    {
+      "name": "Notion",
+      "connections": [
+        "Slack",
+        "Calendar",
+        "Email",
+        "Sites/Web",
+        "Docs/Files",
+        "Automation"
+      ],
+      "core": true,
+      "integrated": true
+    },
+    {
+      "name": "Facebook",
+      "connections": [
+        "Social Media",
+        "CRM"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "GitHub",
+      "connections": [
+        "Code/Dev",
+        "Automation",
+        "Claude Code"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "Google Drive",
+      "connections": [
+        "Docs/Files",
+        "Sites/Web"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "Google Stitch",
+      "connections": [
+        "Design",
+        "AI/Generation",
+        "Sites/Web"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "Instagram",
+      "connections": [
+        "Social Media"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "Midjourney",
+      "connections": [
+        "AI/Generation",
+        "Design"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "Netlify",
+      "connections": [
+        "Sites/Web",
+        "Hosting",
+        "Automation"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "Notion Calendar",
+      "connections": [
+        "Calendar",
+        "Notion"
+      ],
+      "core": false,
+      "integrated": true
+    },
+    {
+      "name": "Slack",
+      "connections": [
+        "Slack"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "Stripe",
+      "connections": [
+        "Payments",
+        "Sites/Web"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "TikTok",
+      "connections": [
+        "Social Media"
+      ],
+      "core": false,
+      "integrated": false
+    },
+    {
+      "name": "VS code",
+      "connections": [
+        "Code/Dev",
+        "Claude Code"
+      ],
+      "core": false,
+      "integrated": true
+    },
+    {
+      "name": "YouTube",
+      "connections": [
+        "Social Media",
+        "Sites/Web"
+      ],
+      "core": false,
+      "integrated": false
+    }
+  ]
+}

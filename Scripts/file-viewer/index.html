@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>File Viewer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    color: #1d1d1f;
+    background: #fff;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  #sidebar {
+    width: 280px;
+    min-width: 280px;
+    border-right: 1px solid #e5e5e5;
+    overflow-y: auto;
+    padding: 16px 0;
+    background: #fafafa;
+  }
+  #sidebar h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #86868b;
+    padding: 0 16px;
+    margin-bottom: 8px;
+  }
+  .tree-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.1s;
+  }
+  .tree-item:hover { background: #f0f0f0; }
+  .tree-item.selected { background: #e8e8ed; font-weight: 500; }
+  .tree-item.dragging { opacity: 0.4; }
+  .tree-item.drop-target { background: #d0e8ff; outline: 2px solid #0071e3; outline-offset: -2px; }
+  .tree-item .arrow {
+    width: 16px;
+    font-size: 10px;
+    color: #86868b;
+    flex-shrink: 0;
+    text-align: center;
+    transition: transform 0.15s;
+  }
+  .tree-item .arrow.open { transform: rotate(90deg); }
+  .tree-item .icon { margin-right: 6px; font-size: 14px; flex-shrink: 0; }
+  .tree-item .label { overflow: hidden; text-overflow: ellipsis; }
+  .tree-children { display: none; }
+  .tree-children.open { display: block; }
+
+  /* Main */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Top bar */
+  #topbar {
+    padding: 12px 24px;
+    border-bottom: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  #breadcrumb {
+    font-size: 13px;
+    color: #86868b;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #breadcrumb span { color: #1d1d1f; font-weight: 500; }
+  #search {
+    width: 220px;
+    padding: 6px 12px;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+  }
+  #search:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
+
+  /* File list */
+  #filelist {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px;
+  }
+  #filelist.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #86868b;
+    font-size: 14px;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #86868b;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e5e5;
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: #1d1d1f; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: #f5f5f7; }
+  tbody tr.dragging { opacity: 0.4; }
+  tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap;
+  }
+  td.name-cell { display: flex; align-items: center; gap: 8px; }
+  td.name-cell .icon { font-size: 16px; flex-shrink: 0; }
+  td.name-cell .fname {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  td.size-cell { color: #86868b; text-align: right; width: 90px; }
+  td.date-cell { color: #86868b; width: 140px; }
+
+  /* Count bar */
+  #countbar {
+    padding: 8px 24px;
+    border-top: 1px solid #e5e5e5;
+    font-size: 12px;
+    color: #86868b;
+    flex-shrink: 0;
+  }
+
+  /* Context menu */
+  #contextmenu {
+    display: none;
+    position: fixed;
+    background: #fff;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    padding: 4px 0;
+    z-index: 1000;
+    min-width: 180px;
+    font-size: 13px;
+  }
+  #contextmenu .menu-item {
+    padding: 7px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #contextmenu .menu-item:hover { background: #f0f0f0; }
+  #contextmenu .menu-divider {
+    height: 1px;
+    background: #e5e5e5;
+    margin: 4px 0;
+  }
+
+  /* Move modal */
+  #movemodal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+  }
+  #movemodal.open { display: flex; }
+  #movemodal .modal-box {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    width: 380px;
+    max-height: 480px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #movemodal .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  #movemodal .modal-search {
+    margin: 12px 20px 0;
+    padding: 6px 12px;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+    width: calc(100% - 40px);
+  }
+  #movemodal .modal-search:focus { border-color: #0071e3; }
+  #movemodal .modal-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+  #movemodal .modal-list .dir-item {
+    padding: 7px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #movemodal .modal-list .dir-item:hover { background: #f0f0f0; }
+  #movemodal .modal-list .dir-item.selected { background: #e8e8ed; font-weight: 500; }
+  #movemodal .modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #e5e5e5;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  #movemodal button {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid #d2d2d7;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #movemodal button:hover { background: #f5f5f7; }
+  #movemodal button.primary {
+    background: #0071e3;
+    color: #fff;
+    border-color: #0071e3;
+  }
+  #movemodal button.primary:hover { background: #0077ed; }
+  #movemodal button.primary:disabled {
+    background: #86868b;
+    border-color: #86868b;
+    cursor: default;
+  }
+
+  /* Toast notification */
+  #toast {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1d1d1f;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 3000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  #toast.show { display: block; }
+  #toast.error { background: #d32f2f; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h2>Folders</h2>
+  <div id="tree"></div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <div id="breadcrumb">Select a folder</div>
+    <input id="search" type="text" placeholder="Filter files...">
+  </div>
+  <div id="filelist" class="empty-state">Select a folder to view files</div>
+  <div id="countbar"></div>
+</div>
+
+<!-- Context menu -->
+<div id="contextmenu">
+  <div class="menu-item" id="ctx-open">Open</div>
+  <div class="menu-divider"></div>
+  <div class="menu-item" id="ctx-move">Move to...</div>
+  <div class="menu-divider"></div>
+  <div class="menu-item" id="ctx-reveal">Reveal in Finder</div>
+</div>
+
+<!-- Move modal -->
+<div id="movemodal">
+  <div class="modal-box">
+    <div class="modal-header">Move "<span id="move-filename"></span>" to...</div>
+    <input class="modal-search" id="move-search" type="text" placeholder="Search folders...">
+    <div class="modal-list" id="move-list"></div>
+    <div class="modal-footer">
+      <button id="move-cancel">Cancel</button>
+      <button class="primary" id="move-confirm" disabled>Move</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+const EMOJI = {
+  directory: '📁',
+  '.js': '📜', '.mjs': '📜', '.ts': '📜',
+  '.py': '🐍',
+  '.html': '🌐', '.css': '🎨',
+  '.json': '📋', '.xml': '📋', '.yaml': '📋', '.yml': '📋',
+  '.md': '📝', '.txt': '📝', '.rtf': '📝',
+  '.pdf': '📕',
+  '.doc': '📄', '.docx': '📄',
+  '.xls': '📊', '.xlsx': '📊', '.csv': '📊',
+  '.ppt': '📊', '.pptx': '📊',
+  '.png': '🖼', '.jpg': '🖼', '.jpeg': '🖼', '.gif': '🖼', '.svg': '🖼', '.webp': '🖼', '.ico': '🖼',
+  '.mp4': '🎬', '.mov': '🎬', '.avi': '🎬', '.mkv': '🎬', '.webm': '🎬',
+  '.mp3': '🎵', '.wav': '🎵', '.aac': '🎵', '.flac': '🎵',
+  '.zip': '📦', '.tar': '📦', '.gz': '📦', '.rar': '📦',
+  '.sh': '⚙️', '.bash': '⚙️', '.zsh': '⚙️',
+  '.env': '🔒',
+};
+
+function getIcon(item) {
+  if (item.type === 'directory') return EMOJI.directory;
+  return EMOJI[item.ext] || '📄';
+}
+
+function formatSize(bytes) {
+  if (bytes === undefined) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+let fileTree = [];
+let selectedPath = null;
+let contextTarget = null; // item being right-clicked
+let moveTarget = null;    // selected destination folder in modal
+let dragItem = null;      // item being dragged
+
+// Toast
+function showToast(msg, isError) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'show' + (isError ? ' error' : '');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.className = ''; }, 3000);
+}
+
+// --- Move API ---
+async function moveFile(srcPath, destPath) {
+  const res = await fetch('/api/move', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ src: srcPath, dest: destPath }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    showToast(data.error || 'Move failed', true);
+    return false;
+  }
+  showToast('Moved successfully');
+  await loadTree();
+  // Re-render current folder if still valid
+  if (selectedPath) {
+    const folder = findNode(fileTree, selectedPath);
+    if (folder) renderFiles(folder);
+    else {
+      document.getElementById('filelist').innerHTML = '';
+      document.getElementById('filelist').classList.add('empty-state');
+      document.getElementById('filelist').textContent = 'Select a folder to view files';
+      document.getElementById('countbar').textContent = '';
+    }
+  }
+  return true;
+}
+
+// --- Load tree ---
+async function loadTree() {
+  const res = await fetch('/api/files');
+  fileTree = await res.json();
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const container = document.getElementById('tree');
+  container.innerHTML = '';
+  for (const root of fileTree) {
+    container.appendChild(buildTreeNode(root, 0));
+  }
+}
+
+function buildTreeNode(node, depth) {
+  const wrapper = document.createElement('div');
+
+  const row = document.createElement('div');
+  row.className = 'tree-item';
+  row.style.paddingLeft = (16 + depth * 16) + 'px';
+  row.dataset.path = node.path;
+
+  const arrow = document.createElement('span');
+  arrow.className = 'arrow';
+  arrow.textContent = '▶';
+
+  const icon = document.createElement('span');
+  icon.className = 'icon';
+  icon.textContent = '📁';
+
+  const label = document.createElement('span');
+  label.className = 'label';
+  label.textContent = node.name;
+
+  row.appendChild(arrow);
+  row.appendChild(icon);
+  row.appendChild(label);
+  wrapper.appendChild(row);
+
+  const dirs = (node.children || []).filter(c => c.type === 'directory');
+  const childContainer = document.createElement('div');
+  childContainer.className = 'tree-children';
+  for (const child of dirs) {
+    childContainer.appendChild(buildTreeNode(child, depth + 1));
+  }
+  wrapper.appendChild(childContainer);
+
+  // Make sidebar folders draggable
+  row.draggable = true;
+
+  // Click to select/expand
+  row.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = childContainer.classList.toggle('open');
+    arrow.classList.toggle('open', isOpen);
+    document.querySelectorAll('.tree-item.selected').forEach(el => el.classList.remove('selected'));
+    row.classList.add('selected');
+    selectedPath = node.path;
+    renderFiles(node);
+  });
+
+  // Drag start from sidebar
+  row.addEventListener('dragstart', (e) => {
+    e.stopPropagation();
+    dragItem = node;
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', node.path);
+  });
+  row.addEventListener('dragend', () => {
+    row.classList.remove('dragging');
+    dragItem = null;
+    document.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
+  });
+
+  // Drag-and-drop: sidebar folders are drop targets
+  row.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!dragItem) return;
+    // Don't allow dropping onto self or own parent
+    if (dragItem.path === node.path) return;
+    // Don't allow dropping a folder into its own subtree
+    if (node.path.startsWith(dragItem.path + '/')) return;
+    e.dataTransfer.dropEffect = 'move';
+    row.classList.add('drop-target');
+  });
+  row.addEventListener('dragleave', () => {
+    row.classList.remove('drop-target');
+  });
+  row.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    row.classList.remove('drop-target');
+    if (!dragItem) return;
+    // Don't drop onto the same parent
+    const dragParent = dragItem.path.substring(0, dragItem.path.lastIndexOf('/'));
+    if (dragParent === node.path) return;
+    // Don't drop onto self or into own subtree
+    if (dragItem.path === node.path) return;
+    if (node.path.startsWith(dragItem.path + '/')) return;
+    await moveFile(dragItem.path, node.path);
+    dragItem = null;
+  });
+
+  return wrapper;
+}
+
+function renderFiles(folderNode) {
+  const items = folderNode.children || [];
+  const breadcrumb = document.getElementById('breadcrumb');
+  breadcrumb.innerHTML = '<span>' + folderNode.name + '</span> — ' + folderNode.path;
+  document.getElementById('search').value = '';
+  renderFileTable(items);
+}
+
+function renderFileTable(items) {
+  const container = document.getElementById('filelist');
+  container.classList.remove('empty-state');
+
+  if (items.length === 0) {
+    container.innerHTML = '';
+    container.classList.add('empty-state');
+    container.textContent = 'Empty folder';
+    document.getElementById('countbar').textContent = '0 items';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th style="text-align:right">Size</th>
+        <th>Modified</th>
+      </tr>
+    </thead>
+  `;
+  const tbody = document.createElement('tbody');
+
+  for (const item of items) {
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.innerHTML = `
+      <td class="name-cell">
+        <span class="icon">${getIcon(item)}</span>
+        <span class="fname">${item.name}</span>
+      </td>
+      <td class="size-cell">${item.type === 'file' ? formatSize(item.size) : '—'}</td>
+      <td class="date-cell">${item.type === 'file' ? formatDate(item.modified) : ''}</td>
+    `;
+
+    // Click to open
+    tr.addEventListener('click', () => openItem(item));
+
+    // Right-click context menu
+    tr.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      contextTarget = item;
+      showContextMenu(e.clientX, e.clientY);
+    });
+
+    // Drag start
+    tr.addEventListener('dragstart', (e) => {
+      dragItem = item;
+      tr.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.path);
+    });
+    tr.addEventListener('dragend', () => {
+      tr.classList.remove('dragging');
+      dragItem = null;
+      document.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
+    });
+
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  container.innerHTML = '';
+  container.appendChild(table);
+
+  const dirCount = items.filter(i => i.type === 'directory').length;
+  const fileCount = items.filter(i => i.type === 'file').length;
+  const parts = [];
+  if (dirCount) parts.push(dirCount + ' folder' + (dirCount > 1 ? 's' : ''));
+  if (fileCount) parts.push(fileCount + ' file' + (fileCount > 1 ? 's' : ''));
+  document.getElementById('countbar').textContent = parts.join(', ');
+}
+
+function openItem(item) {
+  if (item.type === 'directory') {
+    selectedPath = item.path;
+    renderFiles(item);
+    return;
+  }
+  fetch('/api/open?path=' + encodeURIComponent(item.path));
+}
+
+// --- Context menu ---
+function showContextMenu(x, y) {
+  const menu = document.getElementById('contextmenu');
+  menu.style.display = 'block';
+  menu.style.left = Math.min(x, window.innerWidth - 200) + 'px';
+  menu.style.top = Math.min(y, window.innerHeight - 120) + 'px';
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('contextmenu').style.display = 'none';
+});
+
+document.getElementById('ctx-open').addEventListener('click', () => {
+  if (contextTarget) openItem(contextTarget);
+});
+
+document.getElementById('ctx-move').addEventListener('click', () => {
+  if (contextTarget) openMoveModal(contextTarget);
+});
+
+document.getElementById('ctx-reveal').addEventListener('click', () => {
+  if (!contextTarget) return;
+  // Reveal parent folder in Finder with the file selected
+  fetch('/api/open?path=' + encodeURIComponent(
+    contextTarget.type === 'directory' ? contextTarget.path : contextTarget.path.substring(0, contextTarget.path.lastIndexOf('/'))
+  ));
+});
+
+// --- Move modal ---
+let allDirs = [];
+
+async function openMoveModal(item) {
+  document.getElementById('move-filename').textContent = item.name;
+  document.getElementById('move-search').value = '';
+  moveTarget = null;
+  document.getElementById('move-confirm').disabled = true;
+
+  // Fetch all dirs
+  const res = await fetch('/api/dirs');
+  allDirs = await res.json();
+  renderDirList(allDirs, item);
+
+  document.getElementById('movemodal').classList.add('open');
+  document.getElementById('move-search').focus();
+}
+
+function renderDirList(dirs, sourceItem) {
+  const list = document.getElementById('move-list');
+  list.innerHTML = '';
+  const srcParent = sourceItem.path.substring(0, sourceItem.path.lastIndexOf('/'));
+
+  for (const dir of dirs) {
+    // Skip if it's the same as current parent or the item itself
+    if (dir.path === srcParent) continue;
+    if (dir.path === sourceItem.path) continue;
+    // Skip if it's inside the source (can't move folder into itself)
+    if (sourceItem.type === 'directory' && dir.path.startsWith(sourceItem.path + '/')) continue;
+
+    const el = document.createElement('div');
+    el.className = 'dir-item';
+    el.innerHTML = '<span>📁</span><span>' + dir.path.replace(/^\/Users\/[^/]+\//, '~/') + '</span>';
+    el.addEventListener('click', () => {
+      document.querySelectorAll('#move-list .dir-item.selected').forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      moveTarget = dir.path;
+      document.getElementById('move-confirm').disabled = false;
+    });
+    list.appendChild(el);
+  }
+}
+
+document.getElementById('move-search').addEventListener('input', (e) => {
+  const q = e.target.value.toLowerCase();
+  const filtered = q ? allDirs.filter(d => d.path.toLowerCase().includes(q)) : allDirs;
+  renderDirList(filtered, contextTarget);
+});
+
+document.getElementById('move-cancel').addEventListener('click', () => {
+  document.getElementById('movemodal').classList.remove('open');
+});
+
+document.getElementById('move-confirm').addEventListener('click', async () => {
+  if (!contextTarget || !moveTarget) return;
+  document.getElementById('movemodal').classList.remove('open');
+  await moveFile(contextTarget.path, moveTarget);
+});
+
+// Close modal on backdrop click
+document.getElementById('movemodal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('movemodal')) {
+    document.getElementById('movemodal').classList.remove('open');
+  }
+});
+
+// --- Search / filter ---
+document.getElementById('search').addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase();
+  if (!selectedPath) return;
+  const folder = findNode(fileTree, selectedPath);
+  if (!folder) return;
+  const items = folder.children || [];
+  if (!query) {
+    renderFileTable(items);
+    return;
+  }
+  renderFileTable(items.filter(i => i.name.toLowerCase().includes(query)));
+});
+
+function findNode(nodes, targetPath) {
+  for (const node of nodes) {
+    if (node.path === targetPath) return node;
+    if (node.children) {
+      const found = findNode(node.children, targetPath);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+loadTree();
+</script>
+</body>
+</html>

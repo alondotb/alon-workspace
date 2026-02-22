@@ -1,0 +1,26 @@
+# Secrets
+.env
+
+# Large assets (use Google Drive)
+Alon - Renders/
+
+# Generated files (regenerate locally)
+Docs/dashboard.html
+Docs/index.html
+Docs/.git/
+
+# Dashboard deploy clone
+.dashboard-deploy/
+
+# Netlify
+.netlify/
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# macOS
+.DS_Store
