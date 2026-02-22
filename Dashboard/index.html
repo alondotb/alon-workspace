@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="60">
+<title>VRT Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#eef0f4;color:#202124;padding:28px 48px;font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.c{margin:0}
+
+/* Header */
+.hdr{text-align:center;padding:20px 0 24px}
+.hdr h1{font-size:clamp(36px,5vw,56px);font-weight:900;color:#202124;letter-spacing:-.5px}
+.hdr .sub{color:#5f6368;font-size:15px;margin-top:8px;font-weight:500}
+
+/* Color utilities */
+.ab{color:#4285F4}.ao{color:#EA4335}.ap{color:#FBBC04}.ag{color:#34A853}.ar{color:#EA4335}
+
+/* ─── GROUP PANELS ─── wrap each section in a white container */
+.group{background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.group-t{font-size:22px;font-weight:900;margin-bottom:18px;color:#202124;display:flex;align-items:center;gap:10px}
+.group-t .group-badge{font-size:12px;font-weight:700;color:#fff;padding:4px 12px;border-radius:20px;letter-spacing:.3px}
+
+/* Metrics strip — compact colored blocks */
+.metrics{display:flex;flex-wrap:wrap;gap:8px}
+.metric{border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;border:none}
+.metric .val{font-size:22px;font-weight:900;line-height:1}
+.metric .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;opacity:.85}
+.m-blue{background:#e8f0fe;color:#1967d2}.m-green{background:#e6f4ea;color:#137333}.m-yellow{background:#fef7e0;color:#e37400}.m-red{background:#fce8e6;color:#c5221f}.m-dark{background:#e8eaed;color:#3c4043}
+
+/* Alert */
+.alert{background:#fce8e6;border:1px solid #f5c6c2;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:15px;color:#c5221f;font-weight:500}
+.alert b{color:#EA4335}
+
+/* ─── TIER 1: Goals — hero cards ─── */
+.goals{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.gc{background:#f8f9fa;border-radius:14px;padding:20px;position:relative;overflow:hidden;border:1px solid #e8eaed;transition:border-color .15s,box-shadow .15s}
+.gc:hover{border-color:#dadce0;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.gc::before{content:'';position:absolute;top:0;left:0;right:0;height:5px}
+.gc.gc-m::before{background:#EA4335}.gc.gc-p::before{background:#4285F4}.gc.gc-r::before{background:#34A853}
+.gc .gc-head{margin-bottom:6px}
+.gc h3{font-size:18px;font-weight:800;margin:0;color:#202124;line-height:1.3}
+.gc .gc-sub{font-size:14px;color:#5f6368;margin-top:6px;line-height:1.5}
+.gc .gc-stats{display:flex;gap:14px;margin-top:12px;font-size:13px;color:#80868b;font-weight:600}
+.gc .gc-stats span{display:flex;align-items:center;gap:4px}
+.gc .gc-bar-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.gc .gc-bar-row .pb{flex:1;margin-top:0}
+.gc .gc-pct{font-size:18px;font-weight:800;white-space:nowrap}
+.pb{width:100%;height:6px;background:#e0e3e7;border-radius:3px;overflow:hidden;margin-top:12px}
+.pf{height:100%;border-radius:3px}
+
+/* ─── TIER 2: Projects — board columns ─── */
+.proj-board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.proj-col{background:#f8f9fa;border-radius:12px;padding:14px;border:1px solid #e8eaed}
+.proj-col-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:12px 16px;border-radius:12px;background:#f1f3f4}
+.proj-col-head .pcol-title{font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.8px}
+.proj-col-head .pcol-count{font-size:13px;color:#5f6368;font-weight:700;background:#e0e3e7;padding:3px 12px;border-radius:10px}
+.pc{background:#fff;border:1px solid #e8eaed;border-radius:10px;padding:16px;margin-bottom:10px;transition:border-color .15s,box-shadow .15s}
+.pc:last-child{margin-bottom:0}
+.pc:hover{border-color:#c5c9cf;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.pc .pc-name{font-size:15px;font-weight:700;margin-bottom:6px;color:#202124}
+.pc .pc-meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#5f6368}
+.pc .pc-bar{margin-top:8px}
+
+/* ─── TIER 3: Tasks — kanban ─── */
+.task-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.task-col{background:#f8f9fa;border-radius:12px;padding:14px;border:1px solid #e8eaed}
+.task-col-head{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e0e3e7;display:flex;justify-content:space-between;align-items:center}
+.task-col-head .col-count{font-size:12px;font-weight:700;color:#5f6368;background:#e0e3e7;padding:2px 10px;border-radius:8px}
+.tk{background:#fff;border:1px solid #e8eaed;border-radius:8px;padding:14px 16px;margin-bottom:8px;font-size:14px;transition:border-color .15s,box-shadow .15s}
+.tk:last-child{margin-bottom:0}
+.tk:hover{border-color:#c5c9cf;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.tk .tk-name{font-weight:600;margin-bottom:5px;line-height:1.4;color:#202124}
+.tk .tk-foot{display:flex;justify-content:space-between;font-size:12px;color:#5f6368;font-weight:500}
+
+/* Tags — bold, readable */
+.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;vertical-align:middle}
+.tag-m{background:#fce8e6;color:#c5221f;border:1px solid #f5c6c2}
+.tag-p{background:#e8f0fe;color:#1967d2;border:1px solid #c6dafc}
+.tag-r{background:#e6f4ea;color:#137333;border:1px solid #a8dab5}
+
+/* Shared */
+.own{padding:3px 10px;background:#e8eaed;border-radius:6px;font-size:13px;font-weight:600;color:#3c4043}
+.s-prog{color:#4285F4;font-weight:700}.s-done{color:#34A853;font-weight:700}.s-block{color:#EA4335;font-weight:700}.s-ns{color:#80868b;font-weight:600}
+.par{font-size:10px;color:#80868b}
+
+/* Day grid */
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.dc{background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:14px}
+.dc.today{border-color:#4285F4;border-width:2px;background:#e8f0fe}
+.dl{font-size:13px;font-weight:800;color:#4285F4;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.dt{font-size:14px;color:#3c4043;padding:6px 0;border-bottom:1px solid #e0e3e7;line-height:1.4}
+.dt:last-child{border:0}
+.dt .dtowner{font-size:10px;color:#80868b;font-weight:500}
+
+/* Team */
+.tg{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tc{background:#f8f9fa;border:1px solid #e8eaed;border-radius:12px;padding:18px}
+.tc:hover{border-color:#c5c9cf}
+.tc .tn{font-size:20px;font-weight:800;margin-bottom:4px;color:#202124}
+.tc .tcnt{font-size:13px;color:#5f6368;margin-bottom:10px;font-weight:600}
+.tc .ti{font-size:14px;color:#3c4043;padding:6px 0;line-height:1.4;border-bottom:1px solid #e8eaed}
+.tc .ti:last-child{border:0}
+
+/* Phase 0 Board */
+.board-filters{display:flex;gap:6px;margin-bottom:14px}
+.bf{padding:6px 16px;border:1px solid #dadce0;border-radius:20px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;color:#3c4043}
+.bf:hover{background:#f1f3f4}.bf.active{background:#4285F4;color:#fff;border-color:#4285F4}
+.phase0-board{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch}
+.p0-col{min-width:160px;max-width:200px;flex-shrink:0;border-radius:12px;padding:10px;border:1px solid #e0e3e7}
+.p0-col-head{font-size:13px;font-weight:800;text-align:center;padding-bottom:8px;border-bottom:2px solid rgba(0,0,0,.08);margin-bottom:8px;color:#3c4043}
+.p0-card{background:#fff;border:1px solid #e0e3e7;border-radius:8px;padding:8px 10px;margin-bottom:6px;transition:box-shadow .15s}
+.p0-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.p0-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.p0-card-name{font-size:13px;font-weight:600;color:#202124;line-height:1.4;margin-bottom:4px}
+.p0-card-cats{margin-bottom:4px}
+.cat-tag{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.2px;border:1px solid rgba(0,0,0,.06)}
+.p0-card-foot{display:flex;justify-content:space-between;align-items:center}
+.p0-owner{font-size:10px;font-weight:600;color:#5f6368;background:#f1f3f4;padding:1px 8px;border-radius:6px}
+.p0-empty{text-align:center;color:#c0c4c8;font-size:13px;padding:8px}
+
+/* ─── ROADMAP TIMELINE ─── */
+.rm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.rm-grid{display:grid;gap:0;min-width:700px}
+.rm-phases{display:flex;gap:2px;margin-bottom:6px}
+.rm-phase{border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;text-align:center;color:#fff}
+.rm-weeks{display:flex;gap:0}
+.rm-wk{flex:1;text-align:center;font-size:10px;font-weight:700;color:#80868b;padding:6px 0;border-right:1px solid #e8eaed;text-transform:uppercase;letter-spacing:.3px}
+.rm-wk.rm-wk-now{background:#e8f0fe;color:#1967d2;border-radius:6px}
+.rm-lanes{position:relative}
+.rm-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f1f3f4}
+.rm-row:last-child{border:0}
+.rm-lbl{width:140px;flex-shrink:0;font-size:12px;font-weight:600;color:#3c4043;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.rm-track{flex:1;position:relative;height:22px}
+.rm-bar{position:absolute;height:18px;border-radius:9px;top:2px;display:flex;align-items:center;padding:0 6px;overflow:hidden;cursor:pointer;transition:opacity .15s}
+.rm-bar:hover{opacity:.85}
+.rm-bar-fill{position:absolute;top:0;left:0;height:100%;border-radius:9px;opacity:.3}
+.rm-bar-dots{display:flex;gap:3px;position:relative;z-index:1}
+.rm-dot{width:6px;height:6px;border-radius:50%;border:1px solid rgba(255,255,255,.6)}
+.rm-dot.done{background:#fff}.rm-dot.pending{background:transparent}.rm-dot.blocked{background:#EA4335;border-color:#EA4335}
+.rm-today{position:absolute;top:0;bottom:0;width:2px;background:#EA4335;z-index:5;pointer-events:none}
+.rm-today::after{content:'TODAY';position:absolute;top:-16px;left:-16px;font-size:8px;font-weight:800;color:#EA4335;letter-spacing:.5px}
+
+/* Responsive */
+@media(max-width:1024px){body{padding:20px 28px}.group{padding:20px}}
+@media(max-width:900px){.goals,.proj-board,.tg{grid-template-columns:1fr}.gc .gc-pct{font-size:28px}}
+@media(max-width:640px){.days,.task-board{grid-template-columns:1fr 1fr}.tg{grid-template-columns:1fr}body{padding:14px 16px}.group{padding:16px;border-radius:12px}.hdr h1{font-size:28px}}
+@media(max-width:480px){.task-board,.days{grid-template-columns:1fr}}
+
+.ts{text-align:center;color:#9aa0a6;font-size:11px;padding:20px;font-weight:500}
+
+/* ─── NOTION SIDEBAR ─── */
+.dash-wrap{transition:margin-right .3s cubic-bezier(.4,0,.2,1)}
+body.sb-open .dash-wrap{margin-right:380px}
+.sb{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.1);z-index:1000;transition:right .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+body.sb-open .sb{right:0}
+.sb-head{padding:20px 20px 16px;border-bottom:1px solid #e8eaed;display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}
+.sb-head h2{font-size:16px;font-weight:800;color:#202124;line-height:1.3;flex:1;margin-right:12px}
+.sb-close{width:28px;height:28px;border:none;background:#f1f3f4;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.sb-close:hover{background:#e0e3e7}
+.sb-body{flex:1;overflow-y:auto;padding:20px}
+.sb-row{margin-bottom:14px}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:#80868b;margin-bottom:4px}
+.sb-val{font-size:13px;color:#202124;font-weight:500;line-height:1.5}
+.sb-bar{width:100%;height:8px;background:#e0e3e7;border-radius:4px;overflow:hidden;margin-top:6px}
+.sb-bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.sb-children{list-style:none;padding:0}
+.sb-children li{font-size:12px;color:#3c4043;padding:6px 10px;border-radius:6px;margin-bottom:4px;border:1px solid #e8eaed;cursor:pointer;transition:background .1s}
+.sb-children li:hover{background:#f1f3f4}
+.sb-foot{padding:16px 20px;border-top:1px solid #e8eaed;flex-shrink:0}
+.sb-notion{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px;background:#202124;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;text-decoration:none}
+.sb-notion:hover{background:#3c4043}
+
+/* Card Notion toggle icon */
+.n-btn{position:absolute;top:8px;right:8px;width:24px;height:24px;border:1px solid #dadce0;background:#fff;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s,background .1s,border-color .1s;z-index:2}
+.n-btn:hover{background:#f1f3f4;border-color:#c5c9cf}
+.n-btn.active{opacity:1;background:#4285F4;border-color:#4285F4}
+.n-btn.active svg{stroke:#fff}
+*:hover>.n-btn,*:hover .n-btn-wrap .n-btn{opacity:1}
+.n-btn-wrap{position:relative;display:inline}
+
+@media(max-width:900px){.sb{width:320px}body.sb-open .dash-wrap{margin-right:320px}}
+@media(max-width:640px){.sb{width:100%;right:-100%}body.sb-open .dash-wrap{margin-right:0}}
+
+/* ─── DRAG AND DROP ─── */
+[draggable=true]{cursor:grab;user-select:none}
+[draggable=true]:active{cursor:grabbing}
+.dragging{opacity:.4;transform:scale(.97);transition:opacity .15s,transform .15s}
+.drop-zone{transition:background .2s,border-color .2s,box-shadow .2s}
+.drop-zone.drag-over{background:#e8f0fe !important;border-color:#4285F4 !important;box-shadow:inset 0 0 0 2px #4285F4}
+.done-card.drag-over{background:linear-gradient(135deg,#c8e6c9 0%,#a5d6a7 100%) !important;border-color:#2E7D32 !important;box-shadow:inset 0 0 0 2px #2E7D32}
+.drop-ghost{height:4px;background:#4285F4;border-radius:2px;margin:4px 0;transition:all .15s}
+.drag-badge{position:fixed;pointer-events:none;z-index:9999;background:#4285F4;color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.2);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+@keyframes drop-flash{0%{background:#e8f0fe}100%{background:transparent}}
+.drop-flash{animation:drop-flash .6s ease}
+
+/* ─── DONE FOR TODAY ─── */
+.done-card{background:linear-gradient(135deg,#e6f4ea 0%,#d4edda 100%);border:2px solid #34A853;border-radius:16px;padding:24px;margin-bottom:20px}
+.done-card .done-head{font-size:22px;font-weight:900;color:#137333;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.done-card .done-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.done-item{background:#fff;border:1px solid #34A85340;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;transition:box-shadow .15s}
+.done-item:hover{box-shadow:0 2px 8px rgba(52,168,83,.15)}
+.done-item .done-check{color:#34A853;font-size:18px;flex-shrink:0}
+.done-item .done-name{font-size:14px;font-weight:600;color:#202124;flex:1}
+.done-item .done-meta{font-size:11px;color:#5f6368;font-weight:500}
+.done-item .fire{font-size:16px}
+.done-empty{color:#34A853;font-size:15px;font-weight:600;opacity:.7}
+
+/* ─── LINKS PANEL ─── */
+.links-panel{background:#fff;border-radius:16px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden}
+.links-toggle{width:100%;padding:16px 24px;background:#fff;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit;font-size:18px;font-weight:800;color:#202124;transition:background .1s}
+.links-toggle:hover{background:#f8f9fa}
+.links-toggle .lt-badge{font-size:12px;font-weight:700;color:#fff;padding:3px 10px;border-radius:20px;background:#6C3AED}
+.links-toggle .lt-arr{transition:transform .2s;font-size:14px;color:#5f6368}
+.links-body{display:none;padding:0 24px 20px}
+.links-body.open{display:block}
+.links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.lk-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:1px solid #e8eaed;text-decoration:none;color:#202124;font-size:13px;font-weight:600;transition:background .15s,border-color .15s}
+.lk-item:hover{background:#f1f3f4;border-color:#dadce0}
+.lk-item .lk-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.lk-item .lk-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lk-item .lk-ext{font-size:10px;color:#80868b}
+.lk-cat{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#80868b;margin-bottom:6px;margin-top:12px;padding-left:4px}
+.lk-cat:first-child{margin-top:0}
+
+/* ─── CHAT WINDOW ─── */
+.chat-fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:#4285F4;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(66,133,244,.4);z-index:900;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(66,133,244,.5)}
+.chat-fab svg{pointer-events:none}
+.chat-win{position:fixed;bottom:90px;right:24px;width:380px;max-height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:900;display:none;flex-direction:column;overflow:hidden}
+.chat-win.open{display:flex}
+.chat-hdr{padding:14px 18px;background:#4285F4;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.chat-hdr h3{font-size:15px;font-weight:700;margin:0}
+.chat-hdr select{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;outline:none}
+.chat-hdr select option{color:#202124;background:#fff}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;max-height:340px;min-height:120px}
+.chat-msg{margin-bottom:10px;max-width:85%}
+.chat-msg.user{margin-left:auto}
+.chat-msg.bot{margin-right:auto}
+.chat-msg .chat-bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;font-weight:500}
+.chat-msg.user .chat-bubble{background:#e8f0fe;color:#1967d2;border-bottom-right-radius:4px}
+.chat-msg.bot .chat-bubble{background:#f1f3f4;color:#3c4043;border-bottom-left-radius:4px}
+.chat-msg .chat-meta{font-size:10px;color:#9aa0a6;margin-top:3px;font-weight:500}
+.chat-msg.user .chat-meta{text-align:right}
+.chat-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid #e8eaed}
+.chat-input input{flex:1;border:1px solid #dadce0;border-radius:10px;padding:10px 14px;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+.chat-input input:focus{border-color:#4285F4}
+.chat-input button{background:#4285F4;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap}
+.chat-input button:hover{background:#1967d2}
+@media(max-width:480px){.chat-win{width:calc(100% - 32px);right:16px;bottom:80px}.chat-fab{bottom:16px;right:16px}}
+
+/* ─── CARD SELECT & EXPAND ─── */
+.gc,.pc,.tk{cursor:pointer}
+.gc.selected,.pc.selected,.tk.selected{outline:3px solid #6C3AED;outline-offset:-1px;z-index:10;position:relative}
+.gc.expanded{grid-column:1/-1;transition:all .3s ease}
+.pc.expanded,.tk.expanded{transition:all .3s ease}
+.sticky-tree{margin-top:16px;padding-top:14px;border-top:2px solid #e0e3e7}
+.sticky-tree .st-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:#80868b;margin:10px 0 6px;padding-left:2px}
+.sticky-tree .st-label:first-child{margin-top:0}
+.sticky{padding:8px 12px;border-radius:8px;margin-bottom:4px;cursor:pointer;border:1px solid #e8eaed;background:#fff;display:flex;align-items:center;gap:8px;transition:background .15s,border-color .15s;font-size:13px;font-weight:500;color:#3c4043}
+.sticky:hover{background:#f1f3f4;border-color:#dadce0}
+.sticky.current{background:#e8f0fe;border:2px solid #4285F4;font-weight:700;color:#202124}
+.sticky.s-parent{font-weight:700;border-color:#dadce0}
+.sticky .st-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sticky .st-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sticky .st-level{font-size:9px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:6px;flex-shrink:0}
+.tool-card{transition:opacity .3s ease}
+.tool-dimmed{opacity:.15;pointer-events:none}
+</style></head>
+<body>
+<div class="sb" id="sb">
+  <div class="sb-head"><h2 id="sb-title">—</h2><button class="sb-close" onclick="closePanel()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+  <div class="sb-body" id="sb-body"></div>
+  <div class="sb-foot"><a class="sb-notion" id="sb-link" href="#" target="_blank"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2h8v8M14 2L6 10"/></svg>Open in Notion</a></div>
+</div>
+<div class="dash-wrap"><div class="c">
+
+<div class="hdr">
+  <h1 style="color:#5B21B6"><span style="color:#6C3AED">V</span><span style="color:#5B21B6">R</span><span style="color:#8B5CF6">T</span> Dashboard</h1>
+  <div class="sub">Sunday, February 22 &middot; 76 items tracked &middot; Launch in 54 days</div>
+</div>
+
+<div class="group" style="padding:16px 20px">
+  <div class="metrics">
+    <div class="metric m-blue"><div class="val">54</div><div class="lbl">Days to Apr 17</div></div>
+    <div class="metric m-dark"><div class="val">0%</div><div class="lbl">Overall</div></div>
+    <div class="metric m-green"><div class="val">0</div><div class="lbl">In Progress</div></div>
+    <div class="metric m-yellow"><div class="val">0</div><div class="lbl">Not Started</div></div>
+    <div class="metric m-red"><div class="val">33</div><div class="lbl">Overdue</div></div>
+    <div class="metric m-red"><div class="val">0</div><div class="lbl">Blocked</div></div>
+    <div class="metric m-blue"><div class="val">31</div><div class="lbl">This Week</div></div>
+    <div class="metric m-dark"><div class="val">76</div><div class="lbl">Active</div></div>
+  </div>
+</div>
+<div class="group">
+<div class="group-t">Goals <span class="group-badge" style="background:#34A853">3 departments</span></div>
+<div class="goals">
+  <div class="gc gc-m" style="background:#fef2f1;border-color:#f5c6c2" data-nid="30a5308b-6bc5-8105-9245-c920a475a073">
+    <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8105-9245-c920a475a073')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+    <div class="gc-head"><span class="tag tag-m">Marketing</span><h3 style="color:#EA4335;margin-top:6px">Build Revenue &amp; Audience</h3></div>
+    <div class="gc-sub">Platform Launch Marketing / YouTube Channel / Live Courses Marketing</div>
+    <div class="gc-bar-row"><div class="pb"><div class="pf" style="width:0%;background:#EA4335"></div></div><span class="gc-pct" style="color:#EA4335">0%</span></div>
+    <div class="gc-stats"><span>4 projects</span><span>27 tasks</span><span>0 done</span><span>Due Feb 18</span></div>
+  </div>
+  <div class="gc gc-p" style="background:#eef3fc;border-color:#c6dafc" data-nid="30a5308b-6bc5-81bb-a444-f6d7c831e42d">
+    <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81bb-a444-f6d7c831e42d')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+    <div class="gc-head"><span class="tag tag-p">Product</span><h3 style="color:#4285F4;margin-top:6px">Complete Design-to-Dev Pipeline</h3></div>
+    <div class="gc-sub">Lovable to Figma Migration / Component Library for R&amp;D</div>
+    <div class="gc-bar-row"><div class="pb"><div class="pf" style="width:0%;background:#4285F4"></div></div><span class="gc-pct" style="color:#4285F4">0%</span></div>
+    <div class="gc-stats"><span>2 projects</span><span>24 tasks</span><span>0 done</span><span>Due Feb 18</span></div>
+  </div>
+  <div class="gc gc-r" style="background:#e6f4ea;border-color:#a8dab5" data-nid="30a5308b-6bc5-814a-b30b-d771dcbd8db7">
+    <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-814a-b30b-d771dcbd8db7')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+    <div class="gc-head"><span class="tag tag-r">R&amp;D</span><h3 style="color:#34A853;margin-top:6px">Ship MVP Platform</h3></div>
+    <div class="gc-sub">MVP Platform Development / Landing Page Pipeline / Payment and Subscription</div>
+    <div class="gc-bar-row"><div class="pb"><div class="pf" style="width:0%;background:#34A853"></div></div><span class="gc-pct" style="color:#34A853">0%</span></div>
+    <div class="gc-stats"><span>2 projects</span><span>11 tasks</span><span>0 done</span><span>Due Feb 18</span></div>
+  </div>
+</div></div>
+<div class="group">
+<div class="group-t">Roadmap <span class="group-badge" style="background:#6C3AED">Feb 18 &rarr; Apr 17</span></div>
+<div class="rm-wrap">
+<div class="rm-phases">
+  <div class="rm-phase" style="background:#4285F4;width:32.2%">Foundation</div>
+  <div class="rm-phase" style="background:#34A853;width:35.6%">Build Sprint</div>
+  <div class="rm-phase" style="background:#FBBC04;width:20.3%">Polish &amp; Test</div>
+  <div class="rm-phase" style="background:#EA4335;width:10.2%">Launch Prep</div>
+</div>
+<div class="rm-weeks">
+  <div class="rm-wk rm-wk-now" style="width:11.9%">Feb 18</div>
+  <div class="rm-wk" style="width:11.9%">Feb 25</div>
+  <div class="rm-wk" style="width:11.9%">Mar 04</div>
+  <div class="rm-wk" style="width:11.9%">Mar 11</div>
+  <div class="rm-wk" style="width:11.9%">Mar 18</div>
+  <div class="rm-wk" style="width:11.9%">Mar 25</div>
+  <div class="rm-wk" style="width:11.9%">Apr 01</div>
+  <div class="rm-wk" style="width:11.9%">Apr 08</div>
+  <div class="rm-wk" style="width:5.1%">Apr 15</div>
+</div>
+<div class="rm-lanes" style="position:relative">
+  <div class="rm-row">
+    <div class="rm-lbl" onclick="openPanel('30a5308b-6bc5-813f-9258-d618d0a2b291')" title="Platform Launch Marketing"><span class="tag tag-m" style="font-size:8px;padding:1px 4px;margin-right:4px">Mar</span>Platform Launch Mark</div>
+    <div class="rm-track">
+      <div class="rm-bar" style="left:0.0%;width:40.7%;background:#EA4335" onclick="openPanel('30a5308b-6bc5-813f-9258-d618d0a2b291')"><div class="rm-bar-fill" style="width:0%;background:#fff"></div><div class="rm-bar-dots"><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span></div></div>
+    </div>
+  </div>
+  <div class="rm-row">
+    <div class="rm-lbl" onclick="openPanel('30a5308b-6bc5-8166-a959-ee34d778a1f8')" title="YouTube Channel"><span class="tag tag-m" style="font-size:8px;padding:1px 4px;margin-right:4px">Mar</span>YouTube Channel</div>
+    <div class="rm-track">
+      <div class="rm-bar" style="left:0.0%;width:37.3%;background:#EA4335" onclick="openPanel('30a5308b-6bc5-8166-a959-ee34d778a1f8')"><div class="rm-bar-fill" style="width:0%;background:#fff"></div><div class="rm-bar-dots"><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span></div></div>
+    </div>
+  </div>
+  <div class="rm-row">
+    <div class="rm-lbl" onclick="openPanel('30a5308b-6bc5-8185-ab42-fac50e05db87')" title="Lovable to Figma Migration"><span class="tag tag-m" style="font-size:8px;padding:1px 4px;margin-right:4px">Mar</span>Lovable to Figma Mig</div>
+    <div class="rm-track">
+      <div class="rm-bar" style="left:0.0%;width:39.0%;background:#EA4335" onclick="openPanel('30a5308b-6bc5-8185-ab42-fac50e05db87')"><div class="rm-bar-fill" style="width:0%;background:#fff"></div><div class="rm-bar-dots"><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span></div></div>
+    </div>
+  </div>
+  <div class="rm-row">
+    <div class="rm-lbl" onclick="openPanel('30a5308b-6bc5-819d-a8e1-c7901be2ad0f')" title="MVP Platform Development"><span class="tag tag-r" style="font-size:8px;padding:1px 4px;margin-right:4px">R&amp;D</span>MVP Platform Develop</div>
+    <div class="rm-track">
+      <div class="rm-bar" style="left:0.0%;width:89.8%;background:#34A853" onclick="openPanel('30a5308b-6bc5-819d-a8e1-c7901be2ad0f')"><div class="rm-bar-fill" style="width:0%;background:#fff"></div><div class="rm-bar-dots"><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span></div></div>
+    </div>
+  </div>
+  <div class="rm-row">
+    <div class="rm-lbl" onclick="openPanel('30a5308b-6bc5-8190-9d85-e61739a40c9a')" title="Live Courses Marketing"><span class="tag tag-m" style="font-size:8px;padding:1px 4px;margin-right:4px">Mar</span>Live Courses Marketi</div>
+    <div class="rm-track">
+      <div class="rm-bar" style="left:1.7%;width:8.5%;background:#EA4335" onclick="openPanel('30a5308b-6bc5-8190-9d85-e61739a40c9a')"><div class="rm-bar-fill" style="width:0%;background:#fff"></div><div class="rm-bar-dots"><span class="rm-dot pending"></span><span class="rm-dot pending"></span></div></div>
+    </div>
+  </div>
+  <div class="rm-row">
+    <div class="rm-lbl" onclick="openPanel('30a5308b-6bc5-81e3-a5cb-d174c62e2ee5')" title="Payment and Subscription"><span class="tag tag-r" style="font-size:8px;padding:1px 4px;margin-right:4px">R&amp;D</span>Payment and Subscrip</div>
+    <div class="rm-track">
+      <div class="rm-bar" style="left:3.4%;width:67.8%;background:#34A853" onclick="openPanel('30a5308b-6bc5-81e3-a5cb-d174c62e2ee5')"><div class="rm-bar-fill" style="width:0%;background:#fff"></div><div class="rm-bar-dots"><span class="rm-dot pending"></span><span class="rm-dot pending"></span></div></div>
+    </div>
+  </div>
+  <div class="rm-row">
+    <div class="rm-lbl" onclick="openPanel('30a5308b-6bc5-81b5-b7c7-e2db4a861edf')" title="Component Library for R&amp;D"><span class="tag tag-p" style="font-size:8px;padding:1px 4px;margin-right:4px">Pro</span>Component Library fo</div>
+    <div class="rm-track">
+      <div class="rm-bar" style="left:32.2%;width:3.4%;background:#4285F4" onclick="openPanel('30a5308b-6bc5-81b5-b7c7-e2db4a861edf')"><div class="rm-bar-fill" style="width:0%;background:#fff"></div><div class="rm-bar-dots"><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span></div></div>
+    </div>
+  </div>
+  <div class="rm-row">
+    <div class="rm-lbl" onclick="openPanel('30a5308b-6bc5-81e1-96ec-fc2f34f44bba')" title="Landing Page Pipeline"><span class="tag tag-p" style="font-size:8px;padding:1px 4px;margin-right:4px">Pro</span>Landing Page Pipelin</div>
+    <div class="rm-track">
+      <div class="rm-bar" style="left:33.9%;width:3.4%;background:#4285F4" onclick="openPanel('30a5308b-6bc5-81e1-96ec-fc2f34f44bba')"><div class="rm-bar-fill" style="width:0%;background:#fff"></div><div class="rm-bar-dots"><span class="rm-dot pending"></span><span class="rm-dot pending"></span><span class="rm-dot pending"></span></div></div>
+    </div>
+  </div>
+  <div class="rm-today" style="left:6.8%"></div>
+</div>
+</div>
+</div>
+<div class="done-card drop-zone" data-drop-status="Done" style="border-style:dashed;opacity:.6"><div class="done-head"><span style="font-size:28px">&#10003;</span> Done for Today</div><div class="done-empty">Nothing completed yet — drop items here!</div></div>
+<div class="alert"><b>&#9888; Overdue:</b> Build Revenue &amp; Audience (Feb 18, Alon), Sahar: YouTube channel setup and content plan (Feb 18, Sahar), Phase 1 planning (Feb 20, Alon), Set up GitHub repo for VRT platform (Feb 18, Matan), Research competitor YouTube channels (CodeCombat, Tynker, Scratch) (Feb 18, Sahar), Platform Launch Marketing (Feb 18, Sahar), Ship MVP Platform (Feb 18, Alon), Create VRT Visual Identity System (Feb 18, Alon), Sahar: Deliver weekly marketing plan (Feb 19, Sahar), YouTube Channel (Feb 18, Sahar), Database schema setup (Feb 19, Matan), Legal requirements research (Feb 19, Alon), Start Figma PRD: Campaign map (Feb 21, Alon), Start competitive analysis research (Feb 19, Sahar), Lovable to Figma Migration (Feb 18, Alon), CI/CD pipeline setup (Feb 18, Matan), Live Courses Marketing (Feb 19, Sahar), Figma PRD: Login &amp; Auth screens (Feb 19, Alon), MVP Platform Development (Feb 18, Matan), Figma PRD: Campaign map screen (Feb 18, Alon), Figma PRD: Quest player screens (Feb 19, Alon), Stripe integration research (Feb 20, Matan), Start Figma PRD: Login and Auth flow (Feb 21, Alon), Compile research findings draft (Feb 19, Sahar), Complete Design-to-Dev Pipeline (Feb 18, Alon), Set up Notion Calendar for sprint planning (Feb 21, Alon), Auth system research + architecture (Feb 19, Matan), SEO keyword research (Feb 18, Sahar), Code execution service research (Piston/Judge0) (Feb 20, Matan), Payment and Subscription (Feb 20, Matan), Practice high terminal use (Feb 20, Alon), Configure GitHub SSH on Mac (Feb 18, Alon), Lovable to figma - 3 screens (Feb 20, )</div>
+<div class="group">
+<div class="group-t">Projects <span class="group-badge" style="background:#4285F4">8 active</span></div>
+<div class="proj-board">
+  <div class="proj-col"><div class="proj-col-head"><span class="pcol-title" style="color:#EA4335">Marketing</span><span class="pcol-count">4</span></div>
+    <div class="pc" style="background:#fef2f1;border-color:#f5c6c2;position:relative" data-nid="30a5308b-6bc5-813f-9258-d618d0a2b291" draggable="true">
+      <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-813f-9258-d618d0a2b291')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="pc-name">Platform Launch Marketing</div>
+      <div class="pc-meta"><span class="own">Sahar</span><span class=""></span></div>
+      <div class="pc-meta" style="margin-top:4px"><span class="ar">Feb 18</span><span>0/10 tasks</span><span style="color:#EA4335;font-weight:700">0%</span></div>
+      <div class="pc-bar"><div class="pb"><div class="pf" style="width:0%;background:#EA4335"></div></div></div>
+    </div>
+    <div class="pc" style="background:#fef2f1;border-color:#f5c6c2;position:relative" data-nid="30a5308b-6bc5-8166-a959-ee34d778a1f8" draggable="true">
+      <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8166-a959-ee34d778a1f8')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="pc-name">YouTube Channel</div>
+      <div class="pc-meta"><span class="own">Sahar</span><span class=""></span></div>
+      <div class="pc-meta" style="margin-top:4px"><span class="ar">Feb 18</span><span>0/9 tasks</span><span style="color:#EA4335;font-weight:700">0%</span></div>
+      <div class="pc-bar"><div class="pb"><div class="pf" style="width:0%;background:#EA4335"></div></div></div>
+    </div>
+    <div class="pc" style="background:#fef2f1;border-color:#f5c6c2;position:relative" data-nid="30a5308b-6bc5-8185-ab42-fac50e05db87" draggable="true">
+      <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8185-ab42-fac50e05db87')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="pc-name">Lovable to Figma Migration</div>
+      <div class="pc-meta"><span class="own">Alon</span><span class=""></span></div>
+      <div class="pc-meta" style="margin-top:4px"><span class="ar">Feb 18</span><span>0/8 tasks</span><span style="color:#EA4335;font-weight:700">0%</span></div>
+      <div class="pc-bar"><div class="pb"><div class="pf" style="width:0%;background:#EA4335"></div></div></div>
+    </div>
+    <div class="pc" style="background:#fef2f1;border-color:#f5c6c2;position:relative" data-nid="30a5308b-6bc5-8190-9d85-e61739a40c9a" draggable="true">
+      <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8190-9d85-e61739a40c9a')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="pc-name">Live Courses Marketing</div>
+      <div class="pc-meta"><span class="own">Sahar</span><span class=""></span></div>
+      <div class="pc-meta" style="margin-top:4px"><span class="ar">Feb 19</span><span>0/2 tasks</span><span style="color:#EA4335;font-weight:700">0%</span></div>
+      <div class="pc-bar"><div class="pb"><div class="pf" style="width:0%;background:#EA4335"></div></div></div>
+    </div>
+  </div>
+  <div class="proj-col"><div class="proj-col-head"><span class="pcol-title" style="color:#4285F4">Product</span><span class="pcol-count">2</span></div>
+    <div class="pc" style="background:#eef3fc;border-color:#c6dafc;position:relative" data-nid="30a5308b-6bc5-81b5-b7c7-e2db4a861edf" draggable="true">
+      <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81b5-b7c7-e2db4a861edf')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="pc-name">Component Library for R&amp;D</div>
+      <div class="pc-meta"><span class="own">Alon</span><span class=""></span></div>
+      <div class="pc-meta" style="margin-top:4px"><span class="">Mar 09</span><span>0/4 tasks</span><span style="color:#4285F4;font-weight:700">0%</span></div>
+      <div class="pc-bar"><div class="pb"><div class="pf" style="width:0%;background:#4285F4"></div></div></div>
+    </div>
+    <div class="pc" style="background:#eef3fc;border-color:#c6dafc;position:relative" data-nid="30a5308b-6bc5-81e1-96ec-fc2f34f44bba" draggable="true">
+      <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81e1-96ec-fc2f34f44bba')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="pc-name">Landing Page Pipeline</div>
+      <div class="pc-meta"><span class="own">Alon</span><span class=""></span></div>
+      <div class="pc-meta" style="margin-top:4px"><span class="">Mar 10</span><span>0/3 tasks</span><span style="color:#4285F4;font-weight:700">0%</span></div>
+      <div class="pc-bar"><div class="pb"><div class="pf" style="width:0%;background:#4285F4"></div></div></div>
+    </div>
+  </div>
+  <div class="proj-col"><div class="proj-col-head"><span class="pcol-title" style="color:#34A853">R&amp;D</span><span class="pcol-count">2</span></div>
+    <div class="pc" style="background:#e6f4ea;border-color:#a8dab5;position:relative" data-nid="30a5308b-6bc5-819d-a8e1-c7901be2ad0f" draggable="true">
+      <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-819d-a8e1-c7901be2ad0f')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="pc-name">MVP Platform Development</div>
+      <div class="pc-meta"><span class="own">Matan</span><span class=""></span></div>
+      <div class="pc-meta" style="margin-top:4px"><span class="ar">Feb 18</span><span>0/9 tasks</span><span style="color:#34A853;font-weight:700">0%</span></div>
+      <div class="pc-bar"><div class="pb"><div class="pf" style="width:0%;background:#34A853"></div></div></div>
+    </div>
+    <div class="pc" style="background:#e6f4ea;border-color:#a8dab5;position:relative" data-nid="30a5308b-6bc5-81e3-a5cb-d174c62e2ee5" draggable="true">
+      <button class="n-btn" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81e3-a5cb-d174c62e2ee5')" title="Open in Notion"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="pc-name">Payment and Subscription</div>
+      <div class="pc-meta"><span class="own">Matan</span><span class=""></span></div>
+      <div class="pc-meta" style="margin-top:4px"><span class="ar">Feb 20</span><span>0/2 tasks</span><span style="color:#34A853;font-weight:700">0%</span></div>
+      <div class="pc-bar"><div class="pb"><div class="pf" style="width:0%;background:#34A853"></div></div></div>
+    </div>
+  </div>
+</div></div>
+<div class="group">
+<div class="group-t">Tasks <span class="group-badge" style="background:#EA4335">65 active</span></div>
+<div class="task-board">
+  <div class="task-col drop-zone" data-drop-status="In Progress"><div class="task-col-head"><span style="color:#4285F4">In Progress</span><span class="col-count">0</span></div>
+  </div>
+  <div class="task-col drop-zone" data-drop-status="Not Started"><div class="task-col-head"><span style="color:#80868b">Not Started</span><span class="col-count">0</span></div>
+  </div>
+  <div class="task-col drop-zone" data-drop-status="Blocked"><div class="task-col-head"><span style="color:#EA4335">Blocked</span><span class="col-count">0</span></div>
+  </div>
+</div></div>
+<div class="group">
+<div class="group-t">Phase 0 Board <span class="group-badge" style="background:#4285F4">Feb 18 – Mar 8</span></div>
+<div class="board-filters">
+  <button class="bf active" onclick="filterBoard('all')">All</button>
+  <button class="bf" onclick="filterBoard('Alon')">Alon</button>
+  <button class="bf" onclick="filterBoard('Matan')">Matan</button>
+  <button class="bf" onclick="filterBoard('Sahar')">Sahar</button>
+</div>
+<div class="phase0-board">
+  <div class="p0-col drop-zone" data-drop-due="2026-02-18" style="background:#E3F2FD;">
+    <div class="p0-col-head">Wed Feb 18</div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-814c-9e5d-f8ddf2319b8e" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-814c-9e5d-f8ddf2319b8e')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Create VRT Visual Identity System</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-81a6-88ee-c76ff16572f3" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81a6-88ee-c76ff16572f3')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Figma PRD: Campaign map screen</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30b5308b-6bc5-81ca-bf1b-c1a109621252" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30b5308b-6bc5-81ca-bf1b-c1a109621252')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Configure GitHub SSH on Mac</div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Matan" data-nid="30a5308b-6bc5-8137-b496-e1ad754a6946" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8137-b496-e1ad754a6946')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Set up GitHub repo for VRT platform</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#DBEAFE;color:#3B82F6">R&amp;D</span> <span class="cat-tag" style="background:#FFEDD5;color:#F97316">Infrastructure</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Matan</span></div>
+    </div>
+    <div class="p0-card" data-owner="Matan" data-nid="30a5308b-6bc5-818b-8a8a-e0fb9d423021" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-818b-8a8a-e0fb9d423021')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-r" style="font-size:9px;padding:1px 6px">R&amp;D</span> </div>
+      <div class="p0-card-name">CI/CD pipeline setup</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#DBEAFE;color:#3B82F6">R&amp;D</span> <span class="cat-tag" style="background:#FFEDD5;color:#F97316">Infrastructure</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Matan</span></div>
+    </div>
+    <div class="p0-card" data-owner="Sahar" data-nid="30a5308b-6bc5-8106-aeb4-f5bb1342a117" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8106-aeb4-f5bb1342a117')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Sahar: YouTube channel setup and content plan</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FEE2E2;color:#EF4444">YouTube</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Sahar</span></div>
+    </div>
+    <div class="p0-card" data-owner="Sahar" data-nid="30a5308b-6bc5-813a-9567-da8a020172a6" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-813a-9567-da8a020172a6')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Research competitor YouTube channels (CodeCombat, Tynker, Scratch)</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FEE2E2;color:#EF4444">YouTube</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Sahar</span></div>
+    </div>
+    <div class="p0-card" data-owner="Sahar" data-nid="30a5308b-6bc5-81d1-a996-d6e12e9ffc78" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81d1-a996-d6e12e9ffc78')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">SEO keyword research</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#DCFCE7;color:#22C55E">Content</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Sahar</span></div>
+    </div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-19" style="background:#E8F5E9;">
+    <div class="p0-col-head">Thu Feb 19</div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-817f-a7bd-f0233e6d47ca" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-817f-a7bd-f0233e6d47ca')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Legal requirements research</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3F4F6;color:#6B7280">Legal</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-8196-bc8d-cf20d0c1039d" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8196-bc8d-cf20d0c1039d')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Figma PRD: Login &amp; Auth screens</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-81ab-a240-c6f0aae23400" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81ab-a240-c6f0aae23400')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Figma PRD: Quest player screens</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Matan" data-nid="30a5308b-6bc5-8167-92b0-f2abc5a8270e" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8167-92b0-f2abc5a8270e')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-r" style="font-size:9px;padding:1px 6px">R&amp;D</span> </div>
+      <div class="p0-card-name">Database schema setup</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#DBEAFE;color:#3B82F6">R&amp;D</span> <span class="cat-tag" style="background:#FFEDD5;color:#F97316">Infrastructure</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Matan</span></div>
+    </div>
+    <div class="p0-card" data-owner="Matan" data-nid="30a5308b-6bc5-81c1-a092-c687c74ba118" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81c1-a092-c687c74ba118')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-r" style="font-size:9px;padding:1px 6px">R&amp;D</span> </div>
+      <div class="p0-card-name">Auth system research + architecture</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#DBEAFE;color:#3B82F6">R&amp;D</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Matan</span></div>
+    </div>
+    <div class="p0-card" data-owner="Sahar" data-nid="30a5308b-6bc5-8152-9404-f13f47aa6877" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8152-9404-f13f47aa6877')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Sahar: Deliver weekly marketing plan</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FEF9C3;color:#EAB308">Business</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Sahar</span></div>
+    </div>
+    <div class="p0-card" data-owner="Sahar" data-nid="30a5308b-6bc5-8183-ba88-e6992214ab2e" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8183-ba88-e6992214ab2e')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Start competitive analysis research</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FEF9C3;color:#EAB308">Business</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Sahar</span></div>
+    </div>
+    <div class="p0-card" data-owner="Sahar" data-nid="30a5308b-6bc5-81b9-a028-c7e20cb012c1" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81b9-a028-c7e20cb012c1')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Compile research findings draft</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FEF9C3;color:#EAB308">Business</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Sahar</span></div>
+    </div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-20" style="background:#FFF3E0;">
+    <div class="p0-col-head">Fri Feb 20</div>
+    <div class="p0-card" data-owner="" data-nid="30d5308b-6bc5-8009-840d-e6a3975b6061" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30d5308b-6bc5-8009-840d-e6a3975b6061')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag " style="font-size:9px;padding:1px 6px"></span> </div>
+      <div class="p0-card-name">Lovable to figma - 3 screens</div>
+      <div class="p0-card-foot"><span class="p0-owner"></span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-8117-9528-d5eb252ea896" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8117-9528-d5eb252ea896')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Phase 1 planning</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FEF9C3;color:#EAB308">Business</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30b5308b-6bc5-800a-bc79-dd42df54f8cf" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30b5308b-6bc5-800a-bc79-dd42df54f8cf')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Practice high terminal use</div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Matan" data-nid="30a5308b-6bc5-81ad-9601-c5f1ad4fe356" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81ad-9601-c5f1ad4fe356')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-r" style="font-size:9px;padding:1px 6px">R&amp;D</span> </div>
+      <div class="p0-card-name">Stripe integration research</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#DBEAFE;color:#3B82F6">R&amp;D</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Matan</span></div>
+    </div>
+    <div class="p0-card" data-owner="Matan" data-nid="30a5308b-6bc5-81d7-9cef-f33e6de55c3e" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81d7-9cef-f33e6de55c3e')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-r" style="font-size:9px;padding:1px 6px">R&amp;D</span> </div>
+      <div class="p0-card-name">Code execution service research (Piston/Judge0)</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#DBEAFE;color:#3B82F6">R&amp;D</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Matan</span></div>
+    </div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-21" style="background:#F3E5F5;">
+    <div class="p0-col-head">Sat Feb 21</div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-8182-bd7c-d3cffef910aa" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8182-bd7c-d3cffef910aa')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Start Figma PRD: Campaign map</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-81ad-987b-eb77ebe0d32d" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81ad-987b-eb77ebe0d32d')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Start Figma PRD: Login and Auth flow</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-81bf-be67-d1b059a56a80" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81bf-be67-d1b059a56a80')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Set up Notion Calendar for sprint planning</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FFEDD5;color:#F97316">Infrastructure</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-22" style="background:#E0F7FA;border:3px solid #4285F4;">
+    <div class="p0-col-head">Sun Feb 22 <span style="background:#4285F4;color:#fff;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:700">TODAY</span></div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-816b-88bd-f02b2058ff5e" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-816b-88bd-f02b2058ff5e')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Start Figma PRD: Quest player screens</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-81fb-8ff1-cfbf1d4fca41" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-81fb-8ff1-cfbf1d4fca41')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Weekly review: check all 3 planes progress</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FEF9C3;color:#EAB308">Business</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30b5308b-6bc5-8117-9cf0-fe3888615a11" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30b5308b-6bc5-8117-9cf0-fe3888615a11')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-p" style="font-size:9px;padding:1px 6px">Pro</span> </div>
+      <div class="p0-card-name">Visual design: UI/UX website (Stitch + Lovable → Figma)</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-23" style="background:#FBE9E7;">
+    <div class="p0-col-head">Mon Feb 23</div>
+    <div class="p0-card" data-owner="" data-nid="30f5308b-6bc5-80f2-9792-dffa5a2b7d87" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30f5308b-6bc5-80f2-9792-dffa5a2b7d87')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag " style="font-size:9px;padding:1px 6px"></span> </div>
+      <div class="p0-card-name">Prd עם מתן</div>
+      <div class="p0-card-foot"><span class="p0-owner"></span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-8106-82a8-fe6b92f759ab" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8106-82a8-fe6b92f759ab')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Review Sahar's marketing plan and give feedback</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#FEF9C3;color:#EAB308">Business</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-811c-8e4a-e8c3c4a283a2" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-811c-8e4a-e8c3c4a283a2')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Brand identity Figma implementation</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+    <div class="p0-card" data-owner="Alon" data-nid="30a5308b-6bc5-8121-b372-ec647d9f784e" draggable="true" style="position:relative">
+      <button class="n-btn" style="top:4px;right:4px;width:20px;height:20px" onclick="event.stopPropagation();openPanel('30a5308b-6bc5-8121-b372-ec647d9f784e')" title="Open in Notion"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#5f6368" stroke-width="2"><path d="M6 2h8v8M14 2L6 10"/></svg></button>
+      <div class="p0-card-top"><span class="tag tag-m" style="font-size:9px;padding:1px 6px">Mar</span> </div>
+      <div class="p0-card-name">Research Lovable export options and start export</div>
+      <div class="p0-card-cats"><span class="cat-tag" style="background:#F3E8FF;color:#9334E9">UI/UX</span> </div>
+      <div class="p0-card-foot"><span class="p0-owner">Alon</span></div>
+    </div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-24" style="background:#E8EAF6;">
+    <div class="p0-col-head">Tue Feb 24</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-25" style="background:#F1F8E9;">
+    <div class="p0-col-head">Wed Feb 25</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-26" style="background:#FFF8E1;">
+    <div class="p0-col-head">Thu Feb 26</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-27" style="background:#FCE4EC;">
+    <div class="p0-col-head">Fri Feb 27</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-02-28" style="background:#E0F2F1;">
+    <div class="p0-col-head">Sat Feb 28</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-03-01" style="background:#FFF9C4;">
+    <div class="p0-col-head">Sun Mar 01</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-03-02" style="background:#EDE9FE;">
+    <div class="p0-col-head">Mon Mar 02</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-03-03" style="background:#E1F5FE;">
+    <div class="p0-col-head">Tue Mar 03</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-03-04" style="background:#EFEBE9;">
+    <div class="p0-col-head">Wed Mar 04</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-03-05" style="background:#DBEAFE;">
+    <div class="p0-col-head">Thu Mar 05</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-03-06" style="background:#D1FAE5;">
+    <div class="p0-col-head">Fri Mar 06</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-03-07" style="background:#FEF3C7;">
+    <div class="p0-col-head">Sat Mar 07</div>
+    <div class="p0-empty">—</div>
+  </div>
+  <div class="p0-col drop-zone" data-drop-due="2026-03-08" style="background:#FEE2E2;">
+    <div class="p0-col-head">Sun Mar 08</div>
+    <div class="p0-empty">—</div>
+  </div>
+</div></div>
+<div class="group">
+<div class="group-t">This Week <span class="group-badge" style="background:#FBBC04;color:#202124">31 tasks</span></div>
+<div class="days">
+  <div class="dc"><div class="dl">Fri 20</div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Phase 1 planning<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Stripe integration research<br><span class="dtowner">Matan</span></div>
+    <div class="dt" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Code execution service research (Piston/Judge0)<br><span class="dtowner">Matan</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Practice high terminal use<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style=";border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag "></span> Lovable to figma - 3 screens<br><span class="dtowner"></span></div>
+  </div>
+  <div class="dc"><div class="dl">Mon 23</div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Review Sahar's marketing plan and give feedback<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Brand identity Figma implementation<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Research Lovable export options and start export<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style=";border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag "></span> Prd עם מתן<br><span class="dtowner"></span></div>
+  </div>
+  <div class="dc"><div class="dl">Sat 21</div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Start Figma PRD: Campaign map<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Start Figma PRD: Login and Auth flow<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Set up Notion Calendar for sprint planning<br><span class="dtowner">Alon</span></div>
+  </div>
+  <div class="dc today"><div class="dl">Sun 22 (today)</div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Start Figma PRD: Quest player screens<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Weekly review: check all 3 planes progress<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Visual design: UI/UX website (Stitch + Lovable → Figma)<br><span class="dtowner">Alon</span></div>
+  </div>
+  <div class="dc"><div class="dl">Thu 19</div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Sahar: Deliver weekly marketing plan<br><span class="dtowner">Sahar</span></div>
+    <div class="dt" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Database schema setup<br><span class="dtowner">Matan</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Legal requirements research<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Start competitive analysis research<br><span class="dtowner">Sahar</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Figma PRD: Login &amp; Auth screens<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Figma PRD: Quest player screens<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Compile research findings draft<br><span class="dtowner">Sahar</span></div>
+    <div class="dt" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Auth system research + architecture<br><span class="dtowner">Matan</span></div>
+  </div>
+  <div class="dc"><div class="dl">Wed 18</div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Sahar: YouTube channel setup and content plan<br><span class="dtowner">Sahar</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Set up GitHub repo for VRT platform<br><span class="dtowner">Matan</span></div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Research competitor YouTube channels (CodeCombat, Tynker, Scratch)<br><span class="dtowner">Sahar</span></div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Create VRT Visual Identity System<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> CI/CD pipeline setup<br><span class="dtowner">Matan</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Figma PRD: Campaign map screen<br><span class="dtowner">Alon</span></div>
+    <div class="dt" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> SEO keyword research<br><span class="dtowner">Sahar</span></div>
+    <div class="dt" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:4px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Configure GitHub SSH on Mac<br><span class="dtowner">Alon</span></div>
+  </div>
+</div></div>
+<div class="group">
+<div class="group-t">Team <span class="group-badge" style="background:#202124">3 members</span></div>
+<div class="tg">
+  <div class="tc drop-zone" data-drop-owner="Alon"><div class="tn">Alon</div><div class="tcnt">39 active <span class="ar">(15 overdue)</span></div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Build Revenue &amp; Audience &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Ship MVP Platform &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Create VRT Visual Identity System &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Lovable to Figma Migration &#9888;</div>
+    <div class="ti" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Figma PRD: Campaign map screen &#9888;</div>
+    <div class="ti" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Complete Design-to-Dev Pipeline &#9888;</div>
+    <div class="ti" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Configure GitHub SSH on Mac &#9888;</div>
+    <div class="ti" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Legal requirements research &#9888;</div>
+    <div class="ti" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Figma PRD: Login &amp; Auth screens &#9888;</div>
+    <div class="ti" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Figma PRD: Quest player screens &#9888;</div>
+  </div>
+  <div class="tc drop-zone" data-drop-owner="Matan"><div class="tn">Matan</div><div class="tcnt">11 active <span class="ar">(8 overdue)</span></div>
+    <div class="ti" style="background:#eef3fc;border-color:#c6dafc;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-p">Pro</span> Set up GitHub repo for VRT platform &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> CI/CD pipeline setup &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> MVP Platform Development &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Database schema setup &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Auth system research + architecture &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Stripe integration research &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Code execution service research (Piston/Judge0) &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Payment and Subscription &#9888;</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Dev environment documentation</div>
+    <div class="ti" style="background:#e6f4ea;border-color:#a8dab5;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-r">R&amp;D</span> Project scaffolding (Next.js + Tailwind + Prisma)</div>
+  </div>
+  <div class="tc drop-zone" data-drop-owner="Sahar"><div class="tn">Sahar</div><div class="tcnt">23 active <span class="ar">(9 overdue)</span></div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Sahar: YouTube channel setup and content plan &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Research competitor YouTube channels (CodeCombat, Tynker, Scratch) &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Platform Launch Marketing &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> YouTube Channel &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> SEO keyword research &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Sahar: Deliver weekly marketing plan &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Start competitive analysis research &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Live Courses Marketing &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Compile research findings draft &#9888;</div>
+    <div class="ti" style="background:#fef2f1;border-color:#f5c6c2;border-radius:6px;padding:6px 8px;margin-bottom:3px;border-width:1px;border-style:solid"><span class="tag tag-m">Mar</span> Define content pillars: 70% kids (tutorials, challenges, behind-scenes) / 30% parents (value prop, demos)</div>
+  </div>
+</div></div>
+<div class="group" id="tool-stack-group">
+<div class="group-t" id="tool-stack-title">Tool Stack <span class="group-badge" style="background:#202124">17 tools</span></div>
+<div class="metrics" style="margin-bottom:16px"><div class="metric m-blue"><div class="val">4</div><div class="lbl">Core</div></div><div class="metric m-green"><div class="val">4</div><div class="lbl">Integrated</div></div><div class="metric m-yellow"><div class="val">13</div><div class="lbl">Not Integrated</div></div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+  <div class="tool-card" data-connections="Slack,Calendar,Email,Sites/Web,Docs/Files,Automation" data-core="true" style="background:#f8f9fa;border:2px solid #FBBC04;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Notion</span><span style="color:#34A853;font-size:12px" title="Integrated">&#9679;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">a hub for all information i need. and a guide to info that i... <span style="background:#FEF7E0;color:#e37400;font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px">CORE</span></div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8f0fe;color:#1967d2;margin:1px">Slack</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fff3e0;color:#e65100;margin:1px">Calendar</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fef7e0;color:#e37400;margin:1px">Email</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Sites/Web</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#efebe9;color:#5d4037;margin:1px">Docs/Files</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8eaed;color:#3c4043;margin:1px">Automation</span></div>
+  </div>
+  <div class="tool-card" data-connections="Sites/Web,Design,Code/Dev" data-core="true" style="background:#f8f9fa;border:2px solid #FBBC04;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Lovable</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">UI prototyping and rapid web app generation. Exports React+V... <span style="background:#FEF7E0;color:#e37400;font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px">CORE</span></div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Sites/Web</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#f3e5f5;color:#7b1fa2;margin:1px">Design</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8f0fe;color:#1967d2;margin:1px">Code/Dev</span></div>
+  </div>
+  <div class="tool-card" data-connections="Claude Code,Automation,Docs/Files,Notion,Code/Dev" data-core="true" style="background:#f8f9fa;border:2px solid #FBBC04;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Claude Code</span><span style="color:#34A853;font-size:12px" title="Integrated">&#9679;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">“Brain” for the system: agentic coding, automation building,... <span style="background:#FEF7E0;color:#e37400;font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px">CORE</span></div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fce4ec;color:#c2185b;margin:1px">Claude Code</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8eaed;color:#3c4043;margin:1px">Automation</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#efebe9;color:#5d4037;margin:1px">Docs/Files</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8eaed;color:#3c4043;margin:1px">Notion</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8f0fe;color:#1967d2;margin:1px">Code/Dev</span></div>
+  </div>
+  <div class="tool-card" data-connections="Docs/Files,Sites/Web,Design" data-core="true" style="background:#f8f9fa;border:2px solid #FBBC04;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Figma</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">UI design + presentations and PRDs to R&amp;D (UI screens with r... <span style="background:#FEF7E0;color:#e37400;font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px">CORE</span></div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#efebe9;color:#5d4037;margin:1px">Docs/Files</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Sites/Web</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#f3e5f5;color:#7b1fa2;margin:1px">Design</span></div>
+  </div>
+  <div class="tool-card" data-connections="Docs/Files,Sites/Web" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Google Drive</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">File storage, sharing, docs/slides/sheets, assets and export...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#efebe9;color:#5d4037;margin:1px">Docs/Files</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Sites/Web</span></div>
+  </div>
+  <div class="tool-card" data-connections="Code/Dev,Claude Code" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">VS code</span><span style="color:#34A853;font-size:12px" title="Integrated">&#9679;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Code editor for development. Matan's primary IDE. Alon uses ...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8f0fe;color:#1967d2;margin:1px">Code/Dev</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fce4ec;color:#c2185b;margin:1px">Claude Code</span></div>
+  </div>
+  <div class="tool-card" data-connections="Sites/Web,Hosting,Automation" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Netlify</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Web hosting and deployment. Auto-deploys from GitHub. Handle...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Sites/Web</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Hosting</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8eaed;color:#3c4043;margin:1px">Automation</span></div>
+  </div>
+  <div class="tool-card" data-connections="Payments,Sites/Web" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Stripe</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Payment processing for VRT subscriptions. Cards, Apple Pay, ...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fce8e6;color:#c5221f;margin:1px">Payments</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Sites/Web</span></div>
+  </div>
+  <div class="tool-card" data-connections="AI/Generation,Design" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Midjourney</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">AI image generation for VRT visual assets — campaign tree ch...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fff3e0;color:#e65100;margin:1px">AI/Generation</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#f3e5f5;color:#7b1fa2;margin:1px">Design</span></div>
+  </div>
+  <div class="tool-card" data-connections="Social Media" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">TikTok</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Social media marketing — short-form video for kid/parent aud...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fce4ec;color:#c2185b;margin:1px">Social Media</span></div>
+  </div>
+  <div class="tool-card" data-connections="Social Media" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Instagram</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Social media marketing — reach parents and kids with short-f...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fce4ec;color:#c2185b;margin:1px">Social Media</span></div>
+  </div>
+  <div class="tool-card" data-connections="Code/Dev,Automation,Claude Code" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">GitHub</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Code repository hosting, version control, collaboration with...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8f0fe;color:#1967d2;margin:1px">Code/Dev</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8eaed;color:#3c4043;margin:1px">Automation</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fce4ec;color:#c2185b;margin:1px">Claude Code</span></div>
+  </div>
+  <div class="tool-card" data-connections="Social Media,CRM" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Facebook</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Facebook Page (Virtual Techies - VRT) for brand presence + G...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fce4ec;color:#c2185b;margin:1px">Social Media</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#f3e5f5;color:#7b1fa2;margin:1px">CRM</span></div>
+  </div>
+  <div class="tool-card" data-connections="Social Media,Sites/Web" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">YouTube</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Content channel for parent education and kid engagement. Par...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fce4ec;color:#c2185b;margin:1px">Social Media</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Sites/Web</span></div>
+  </div>
+  <div class="tool-card" data-connections="Design,AI/Generation,Sites/Web" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Google Stitch</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">AI-powered visual prototyping. Used alongside Lovable for ra...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#f3e5f5;color:#7b1fa2;margin:1px">Design</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fff3e0;color:#e65100;margin:1px">AI/Generation</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e6f4ea;color:#137333;margin:1px">Sites/Web</span></div>
+  </div>
+  <div class="tool-card" data-connections="Calendar,Notion" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Notion Calendar</span><span style="color:#34A853;font-size:12px" title="Integrated">&#9679;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Schedule planning; synced with your business calendar.</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#fff3e0;color:#e65100;margin:1px">Calendar</span><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8eaed;color:#3c4043;margin:1px">Notion</span></div>
+  </div>
+  <div class="tool-card" data-connections="Slack" data-core="false" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:10px;padding:12px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-weight:700;font-size:13px;color:#202124">Slack</span><span style="color:#dadce0;font-size:12px" title="Not integrated">&#9675;</span></div>
+    <div style="font-size:11px;color:#5f6368;margin-bottom:6px;line-height:1.4">Team comms, async updates, quick decisions, lightweight coor...</div>
+    <div><span style="display:inline-block;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:600;background:#e8f0fe;color:#1967d2;margin:1px">Slack</span></div>
+  </div>
+</div></div>
+<div class="links-panel">
+<button class="links-toggle" onclick="var b=this.nextElementSibling;b.classList.toggle('open');this.querySelector('.lt-arr').textContent=b.classList.contains('open')?'&#9650;':'&#9660;'"><span>&#128279; Links &amp; Resources <span class="lt-badge">14</span></span><span class="lt-arr">&#9660;</span></button>
+<div class="links-body">
+<div class="lk-cat">Dashboards &amp; Sites</div>
+<div class="links-grid">
+<a class="lk-item" href="https://vrt-dashboard.netlify.app" target="_blank"><span class="lk-dot" style="background:#6C3AED"></span><span class="lk-label">VRT Dashboard (live)</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="http://localhost:3001" target="_blank"><span class="lk-dot" style="background:#4285F4"></span><span class="lk-label">Dashboard Server</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://vrt.co.il" target="_blank"><span class="lk-dot" style="background:#34A853"></span><span class="lk-label">VRT Domain</span><span class="lk-ext">&#8599;</span></a>
+</div>
+<div class="lk-cat">Notion</div>
+<div class="links-grid">
+<a class="lk-item" href="https://notion.so/30a5308b6bc580efae57e27dbfdfd1f2" target="_blank"><span class="lk-dot" style="background:#000"></span><span class="lk-label">Workspace - VRT</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://notion.so/30a5308b6bc58171a2c3d89200293d13" target="_blank"><span class="lk-dot" style="background:#000"></span><span class="lk-label">VRT Tracker DB</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://notion.so/30a5308b6bc5814fba07d7ba33691adc" target="_blank"><span class="lk-dot" style="background:#000"></span><span class="lk-label">Feature Board DB</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://notion.so/30a5308b6bc58130aaddc1bd686dcc5e" target="_blank"><span class="lk-dot" style="background:#000"></span><span class="lk-label">Design Specs</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://notion.so/3408692eca1448868143-86ceb7f979e6" target="_blank"><span class="lk-dot" style="background:#000"></span><span class="lk-label">Tool Inventory DB</span><span class="lk-ext">&#8599;</span></a>
+</div>
+<div class="lk-cat">Dev Tools</div>
+<div class="links-grid">
+<a class="lk-item" href="https://github.com" target="_blank"><span class="lk-dot" style="background:#333"></span><span class="lk-label">GitHub</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://app.netlify.com" target="_blank"><span class="lk-dot" style="background:#00C7B7"></span><span class="lk-label">Netlify</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://figma.com" target="_blank"><span class="lk-dot" style="background:#A259FF"></span><span class="lk-label">Figma</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://lovable.dev" target="_blank"><span class="lk-dot" style="background:#FF6B6B"></span><span class="lk-label">Lovable</span><span class="lk-ext">&#8599;</span></a>
+</div>
+<div class="lk-cat">Communication</div>
+<div class="links-grid">
+<a class="lk-item" href="https://slack.com" target="_blank"><span class="lk-dot" style="background:#4A154B"></span><span class="lk-label">Slack</span><span class="lk-ext">&#8599;</span></a>
+<a class="lk-item" href="https://calendar.notion.so" target="_blank"><span class="lk-dot" style="background:#000"></span><span class="lk-label">Notion Calendar</span><span class="lk-ext">&#8599;</span></a>
+</div>
+</div></div>
+<div class="ts">VRT Tracker &middot; 2026-02-22 14:42 &middot; python3 Scripts/generate-dashboard.py to refresh</div>
+<script>
+var _items = {"30a5308b-6bc5-8105-9245-c920a475a073": {"id": "30a5308b-6bc5-8105-9245-c920a475a073", "name": "Build Revenue & Audience", "department": "Marketing", "level": "Goal", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Alon", "parent_ids": [], "notes": "", "categories": []}, "30a5308b-6bc5-8106-82a8-fe6b92f759ab": {"id": "30a5308b-6bc5-8106-82a8-fe6b92f759ab", "name": "Review Sahar's marketing plan and give feedback", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-23", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8190-9d85-e61739a40c9a"], "notes": "Sahar delivers her weekly plan today. Review both plans (live courses + platform) and give feedback.", "categories": ["Business"]}, "30a5308b-6bc5-8106-9692-e4142f301d0f": {"id": "30a5308b-6bc5-8106-9692-e4142f301d0f", "name": "Parent interview outreach (recruit 5)", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-13", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Business"]}, "30a5308b-6bc5-8106-aeb4-f5bb1342a117": {"id": "30a5308b-6bc5-8106-aeb4-f5bb1342a117", "name": "Sahar: YouTube channel setup and content plan", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "Set up YouTube channel. Plan first 4 videos (2 parent-facing, 2 kid-facing). Propose content calendar.", "categories": ["YouTube"]}, "30a5308b-6bc5-810a-a29d-c66d1cf91b5e": {"id": "30a5308b-6bc5-810a-a29d-c66d1cf91b5e", "name": "Component spec draft for auth flow", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81b5-b7c7-e2db4a861edf"], "notes": "", "categories": ["UI/UX", "R&D"]}, "30a5308b-6bc5-810d-b028-d4cbe80c3b05": {"id": "30a5308b-6bc5-810d-b028-d4cbe80c3b05", "name": "Run dashboard through Lovable for UI/UX polish", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-30", "owner": "Alon", "parent_ids": [], "notes": "Paste current dashboard HTML into Lovable for professional redesign. Keep same layout and data flow. Port CSS back to Python generator.", "categories": ["UI/UX"]}, "30a5308b-6bc5-810e-980d-c0c704d3dbb2": {"id": "30a5308b-6bc5-810e-980d-c0c704d3dbb2", "name": "Dev environment documentation", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "", "categories": ["R&D", "Infrastructure"]}, "30a5308b-6bc5-8117-9528-d5eb252ea896": {"id": "30a5308b-6bc5-8117-9528-d5eb252ea896", "name": "Phase 1 planning", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-20", "owner": "Alon", "parent_ids": [], "notes": "", "categories": ["Business"]}, "30a5308b-6bc5-811c-8e4a-e8c3c4a283a2": {"id": "30a5308b-6bc5-811c-8e4a-e8c3c4a283a2", "name": "Brand identity Figma implementation", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-23", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8185-ab42-fac50e05db87"], "notes": "", "categories": ["UI/UX"]}, "30a5308b-6bc5-811d-883e-cb7132e069c3": {"id": "30a5308b-6bc5-811d-883e-cb7132e069c3", "name": "Onboarding self-service funnel", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-03-12", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "Self-service onboarding flow: user signs up, picks a plan, starts learning. No manual intervention needed.", "categories": ["UI/UX"]}, "30a5308b-6bc5-8121-b372-ec647d9f784e": {"id": "30a5308b-6bc5-8121-b372-ec647d9f784e", "name": "Research Lovable export options and start export", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-23", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8185-ab42-fac50e05db87"], "notes": "Figure out how to export Lovable demo to Figma. Start the export process.", "categories": ["UI/UX"]}, "30a5308b-6bc5-8124-86f8-c460de0547c8": {"id": "30a5308b-6bc5-8124-86f8-c460de0547c8", "name": "Define content pillars: 70% kids (tutorials, challenges, behind-scenes) / 30% parents (value prop, demos)", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "", "categories": ["YouTube"]}, "30a5308b-6bc5-8131-8dfc-eb0bd8f077ec": {"id": "30a5308b-6bc5-8131-8dfc-eb0bd8f077ec", "name": "More parent interviews (2-3)", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-13", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Business"]}, "30a5308b-6bc5-8137-ac6b-ea3f1b231a1c": {"id": "30a5308b-6bc5-8137-ac6b-ea3f1b231a1c", "name": "First \"building in public\" post", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Content"]}, "30a5308b-6bc5-8137-b496-e1ad754a6946": {"id": "30a5308b-6bc5-8137-b496-e1ad754a6946", "name": "Set up GitHub repo for VRT platform", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Matan", "parent_ids": [], "notes": "Create GitHub org/repo. Set up CI/CD. Branch protection. Connect to Claude Code workspace.", "categories": ["R&D", "Infrastructure"]}, "30a5308b-6bc5-813a-9567-da8a020172a6": {"id": "30a5308b-6bc5-813a-9567-da8a020172a6", "name": "Research competitor YouTube channels (CodeCombat, Tynker, Scratch)", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "", "categories": ["YouTube"]}, "30a5308b-6bc5-813f-9258-d618d0a2b291": {"id": "30a5308b-6bc5-813f-9258-d618d0a2b291", "name": "Platform Launch Marketing", "department": "Marketing", "level": "Project", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8105-9245-c920a475a073"], "notes": "2-week marketing plan for MVP platform launch. Sahar leads.", "categories": []}, "30a5308b-6bc5-814a-b30b-d771dcbd8db7": {"id": "30a5308b-6bc5-814a-b30b-d771dcbd8db7", "name": "Ship MVP Platform", "department": "R&D", "level": "Goal", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Alon", "parent_ids": [], "notes": "", "categories": []}, "30a5308b-6bc5-814c-9e5d-f8ddf2319b8e": {"id": "30a5308b-6bc5-814c-9e5d-f8ddf2319b8e", "name": "Create VRT Visual Identity System", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81bb-a444-f6d7c831e42d"], "notes": "Brand guide created at Docs/VRT-Visual-Identity.md. Covers color system, typography, components, motion, landing page spec, platform UI. Needs Figma implementation.", "categories": ["UI/UX"]}, "30a5308b-6bc5-8150-8e33-c5f4751dfea5": {"id": "30a5308b-6bc5-8150-8e33-c5f4751dfea5", "name": "Export Lovable demo to Figma", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-12", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8185-ab42-fac50e05db87"], "notes": "Export current Lovable demo. Get it into Figma for cleanup and component extraction.", "categories": ["UI/UX"]}, "30a5308b-6bc5-8152-9404-f13f47aa6877": {"id": "30a5308b-6bc5-8152-9404-f13f47aa6877", "name": "Sahar: Deliver weekly marketing plan", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8190-9d85-e61739a40c9a"], "notes": "Two plans: 1) Live courses (liquidity), 2) MVP platform. Due tomorrow Feb 18. Email: saharuzan51@gmail.com", "categories": ["Business"]}, "30a5308b-6bc5-8153-a1f3-f625cea3bdd8": {"id": "30a5308b-6bc5-8153-a1f3-f625cea3bdd8", "name": "Set up VRT Slack workspace with team channels", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-11", "owner": "Alon", "parent_ids": [], "notes": "Create Slack workspace. Channels: #general, #marketing, #product, #design. Invite Matan + Sahar. Connect to Notion.", "categories": ["Infrastructure"]}, "30a5308b-6bc5-8155-b281-c29de0a8acbf": {"id": "30a5308b-6bc5-8155-b281-c29de0a8acbf", "name": "Onboarding flow finalization", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-04-11", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "", "categories": ["UI/UX"]}, "30a5308b-6bc5-8156-949f-f7b5c195f308": {"id": "30a5308b-6bc5-8156-949f-f7b5c195f308", "name": "Convert designs to components, hand off to Matan", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-10", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81e1-96ec-fc2f34f44bba"], "notes": "After Figma export is clean, spec out components and send to R&D.", "categories": ["UI/UX", "R&D"]}, "30a5308b-6bc5-8156-9b96-c52337a55fe8": {"id": "30a5308b-6bc5-8156-9b96-c52337a55fe8", "name": "Landing page wireframe in Figma", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-11", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81e1-96ec-fc2f34f44bba"], "notes": "", "categories": ["UI/UX"]}, "30a5308b-6bc5-8158-9462-de65366dc3b8": {"id": "30a5308b-6bc5-8158-9462-de65366dc3b8", "name": "Project scaffolding (Next.js + Tailwind + Prisma)", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "", "categories": ["R&D", "Infrastructure"]}, "30a5308b-6bc5-815b-bdd7-ec0becd64f8a": {"id": "30a5308b-6bc5-815b-bdd7-ec0becd64f8a", "name": "Script first parent video: \"Why your kid should learn coding in 2026\"", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-11", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "", "categories": ["YouTube", "Content"]}, "30a5308b-6bc5-8166-a959-ee34d778a1f8": {"id": "30a5308b-6bc5-8166-a959-ee34d778a1f8", "name": "YouTube Channel", "department": "Marketing", "level": "Project", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8105-9245-c920a475a073"], "notes": "Parent + kids content. Plan content calendar, set up channel, first videos.", "categories": []}, "30a5308b-6bc5-8167-92b0-f2abc5a8270e": {"id": "30a5308b-6bc5-8167-92b0-f2abc5a8270e", "name": "Database schema setup", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "", "categories": ["R&D", "Infrastructure"]}, "30a5308b-6bc5-816b-88bd-f02b2058ff5e": {"id": "30a5308b-6bc5-816b-88bd-f02b2058ff5e", "name": "Start Figma PRD: Quest player screens", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-22", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81ab-a240-c6f0aae23400"], "notes": "Design quest video player, coding workspace, hint system, completion flow.", "categories": ["UI/UX"]}, "30a5308b-6bc5-8171-aa3c-d13d928cad03": {"id": "30a5308b-6bc5-8171-aa3c-d13d928cad03", "name": "Script first kids video: \"What is Python? (for kids)\"", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-11", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "", "categories": ["YouTube", "Content"]}, "30a5308b-6bc5-8172-8f88-e9af9222f9a6": {"id": "30a5308b-6bc5-8172-8f88-e9af9222f9a6", "name": "Record first parent video", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-10", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "", "categories": ["YouTube", "Content"]}, "30a5308b-6bc5-817e-9b22-e109c3953b74": {"id": "30a5308b-6bc5-817e-9b22-e109c3953b74", "name": "Define pricing and subscription tiers", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-03-31", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81e3-a5cb-d174c62e2ee5"], "notes": "Decide pricing model before Matan builds payment integration.", "categories": ["Business"]}, "30a5308b-6bc5-817f-89c9-d23ab195601d": {"id": "30a5308b-6bc5-817f-89c9-d23ab195601d", "name": "Edit + upload first 2 videos", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "", "categories": ["YouTube"]}, "30a5308b-6bc5-817f-a7bd-f0233e6d47ca": {"id": "30a5308b-6bc5-817f-a7bd-f0233e6d47ca", "name": "Legal requirements research", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Alon", "parent_ids": [], "notes": "", "categories": ["Legal"]}, "30a5308b-6bc5-8182-bd7c-d3cffef910aa": {"id": "30a5308b-6bc5-8182-bd7c-d3cffef910aa", "name": "Start Figma PRD: Campaign map", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-21", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81a6-88ee-c76ff16572f3"], "notes": "Design the 2D campaign node tree. Quest progression, unlock states, visual flow.", "categories": ["UI/UX"]}, "30a5308b-6bc5-8183-ba88-e6992214ab2e": {"id": "30a5308b-6bc5-8183-ba88-e6992214ab2e", "name": "Start competitive analysis research", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Business"]}, "30a5308b-6bc5-8185-ab42-fac50e05db87": {"id": "30a5308b-6bc5-8185-ab42-fac50e05db87", "name": "Lovable to Figma Migration", "department": "Marketing", "level": "Project", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81bb-a444-f6d7c831e42d"], "notes": "Export current Lovable demo to Figma. Clean up for component extraction.", "categories": ["UI/UX"]}, "30a5308b-6bc5-818b-8a8a-e0fb9d423021": {"id": "30a5308b-6bc5-818b-8a8a-e0fb9d423021", "name": "CI/CD pipeline setup", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "", "categories": ["R&D", "Infrastructure"]}, "30a5308b-6bc5-8190-9d85-e61739a40c9a": {"id": "30a5308b-6bc5-8190-9d85-e61739a40c9a", "name": "Live Courses Marketing", "department": "Marketing", "level": "Project", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8105-9245-c920a475a073"], "notes": "2-week marketing plan for live courses. Revenue/liquidity focus. Sahar leads. Weekly plan due Feb 18.", "categories": []}, "30a5308b-6bc5-8196-bc8d-cf20d0c1039d": {"id": "30a5308b-6bc5-8196-bc8d-cf20d0c1039d", "name": "Figma PRD: Login & Auth screens", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8185-ab42-fac50e05db87"], "notes": "Design login, signup, password reset, onboarding flow screens in Figma.", "categories": ["UI/UX"]}, "30a5308b-6bc5-819b-a741-ce68f3fd936c": {"id": "30a5308b-6bc5-819b-a741-ce68f3fd936c", "name": "Landing page copy draft", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-11", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81e1-96ec-fc2f34f44bba"], "notes": "", "categories": ["Content"]}, "30a5308b-6bc5-819d-a8e1-c7901be2ad0f": {"id": "30a5308b-6bc5-819d-a8e1-c7901be2ad0f", "name": "MVP Platform Development", "department": "R&D", "level": "Project", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-814a-b30b-d771dcbd8db7"], "notes": "Working self-paced quest-based learning platform. Campaign tree with video lessons.", "categories": []}, "30a5308b-6bc5-81a6-88ee-c76ff16572f3": {"id": "30a5308b-6bc5-81a6-88ee-c76ff16572f3", "name": "Figma PRD: Campaign map screen", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8185-ab42-fac50e05db87"], "notes": "Design the 2D campaign node tree, quest progression, unlock states.", "categories": ["UI/UX"]}, "30a5308b-6bc5-81ab-a240-c6f0aae23400": {"id": "30a5308b-6bc5-81ab-a240-c6f0aae23400", "name": "Figma PRD: Quest player screens", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8185-ab42-fac50e05db87"], "notes": "Design quest video player, coding workspace/IDE, hint system, completion flow.", "categories": ["UI/UX"]}, "30a5308b-6bc5-81ad-9601-c5f1ad4fe356": {"id": "30a5308b-6bc5-81ad-9601-c5f1ad4fe356", "name": "Stripe integration research", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-02-20", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-81e3-a5cb-d174c62e2ee5"], "notes": "", "categories": ["R&D"]}, "30a5308b-6bc5-81ad-987b-eb77ebe0d32d": {"id": "30a5308b-6bc5-81ad-987b-eb77ebe0d32d", "name": "Start Figma PRD: Login and Auth flow", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-21", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8196-bc8d-cf20d0c1039d"], "notes": "Design login, signup, password reset screens in Figma. Simplest flow first.", "categories": ["UI/UX"]}, "30a5308b-6bc5-81b2-90b1-daeb7c633e7b": {"id": "30a5308b-6bc5-81b2-90b1-daeb7c633e7b", "name": "Record first kids video", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-10", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "", "categories": ["YouTube", "Content"]}, "30a5308b-6bc5-81b5-b7c7-e2db4a861edf": {"id": "30a5308b-6bc5-81b5-b7c7-e2db4a861edf", "name": "Component Library for R&D", "department": "Product", "level": "Project", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81bb-a444-f6d7c831e42d"], "notes": "Convert Figma designs to reusable component specs. Hand off to Matan.", "categories": ["UI/UX"]}, "30a5308b-6bc5-81b7-9a2e-e5a54abe160f": {"id": "30a5308b-6bc5-81b7-9a2e-e5a54abe160f", "name": "Component library handoff prep", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81b5-b7c7-e2db4a861edf"], "notes": "", "categories": ["UI/UX", "R&D"]}, "30a5308b-6bc5-81b8-bbc6-fe42cd84baf2": {"id": "30a5308b-6bc5-81b8-bbc6-fe42cd84baf2", "name": "Propose 4-week content calendar (mix of kids + parent content)", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-10", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-8166-a959-ee34d778a1f8"], "notes": "", "categories": ["YouTube", "Content"]}, "30a5308b-6bc5-81b9-a028-c7e20cb012c1": {"id": "30a5308b-6bc5-81b9-a028-c7e20cb012c1", "name": "Compile research findings draft", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Business"]}, "30a5308b-6bc5-81bb-a444-f6d7c831e42d": {"id": "30a5308b-6bc5-81bb-a444-f6d7c831e42d", "name": "Complete Design-to-Dev Pipeline", "department": "Product", "level": "Goal", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Alon", "parent_ids": [], "notes": "", "categories": ["UI/UX"]}, "30a5308b-6bc5-81be-a89a-e3e1efd7d1c8": {"id": "30a5308b-6bc5-81be-a89a-e3e1efd7d1c8", "name": "Weekly review #3 + Phase 0 retro", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-30", "owner": "Alon", "parent_ids": [], "notes": "", "categories": ["Business"]}, "30a5308b-6bc5-81bf-be67-d1b059a56a80": {"id": "30a5308b-6bc5-81bf-be67-d1b059a56a80", "name": "Set up Notion Calendar for sprint planning", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-21", "owner": "Alon", "parent_ids": [], "notes": "Connect Notion Calendar to VRT Tracker due dates. Set up weekly sprint blocks. Share with team.", "categories": ["Infrastructure"]}, "30a5308b-6bc5-81c1-813b-d8b866e76b4d": {"id": "30a5308b-6bc5-81c1-813b-d8b866e76b4d", "name": "Set up Instagram + TikTok accounts", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-12", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Content"]}, "30a5308b-6bc5-81c1-a092-c687c74ba118": {"id": "30a5308b-6bc5-81c1-a092-c687c74ba118", "name": "Auth system research + architecture", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-02-19", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "", "categories": ["R&D"]}, "30a5308b-6bc5-81d1-a996-d6e12e9ffc78": {"id": "30a5308b-6bc5-81d1-a996-d6e12e9ffc78", "name": "SEO keyword research", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Content"]}, "30a5308b-6bc5-81d7-9cef-f33e6de55c3e": {"id": "30a5308b-6bc5-81d7-9cef-f33e6de55c3e", "name": "Code execution service research (Piston/Judge0)", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-02-20", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "", "categories": ["R&D"]}, "30a5308b-6bc5-81db-a1b2-f00cf8f02b4a": {"id": "30a5308b-6bc5-81db-a1b2-f00cf8f02b4a", "name": "First parent interviews (2-3)", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-12", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Business"]}, "30a5308b-6bc5-81e0-8c68-de2f2bff8d6b": {"id": "30a5308b-6bc5-81e0-8c68-de2f2bff8d6b", "name": "Auth prototype", "department": "R&D", "level": "Task", "status": "", "progress": 0, "due": "2026-03-10", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-819d-a8e1-c7901be2ad0f"], "notes": "", "categories": ["R&D"]}, "30a5308b-6bc5-81e1-96ec-fc2f34f44bba": {"id": "30a5308b-6bc5-81e1-96ec-fc2f34f44bba", "name": "Landing Page Pipeline", "department": "Product", "level": "Project", "status": "", "progress": 0, "due": "2026-03-10", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-814a-b30b-d771dcbd8db7"], "notes": "Export Lovable demo → Figma → convert to components → send to Matan.", "categories": []}, "30a5308b-6bc5-81e3-a5cb-d174c62e2ee5": {"id": "30a5308b-6bc5-81e3-a5cb-d174c62e2ee5", "name": "Payment and Subscription", "department": "R&D", "level": "Project", "status": "", "progress": 0, "due": "2026-02-20", "owner": "Matan", "parent_ids": ["30a5308b-6bc5-814a-b30b-d771dcbd8db7"], "notes": "Self-service subscription payments. Pricing tiers defined by Alon.", "categories": []}, "30a5308b-6bc5-81e8-a9d6-f37308ee37e1": {"id": "30a5308b-6bc5-81e8-a9d6-f37308ee37e1", "name": "Component spec draft for campaign map", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-10", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81b5-b7c7-e2db4a861edf"], "notes": "", "categories": ["UI/UX", "R&D"]}, "30a5308b-6bc5-81eb-8263-d53586f8b883": {"id": "30a5308b-6bc5-81eb-8263-d53586f8b883", "name": "Set up Facebook page + group", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-11", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Content"]}, "30a5308b-6bc5-81ed-b08f-e4f1b34dd978": {"id": "30a5308b-6bc5-81ed-b08f-e4f1b34dd978", "name": "Component library handoff to Matan", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-09", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-81b5-b7c7-e2db4a861edf"], "notes": "", "categories": ["UI/UX", "R&D"]}, "30a5308b-6bc5-81f1-b8d6-f12a54d8f405": {"id": "30a5308b-6bc5-81f1-b8d6-f12a54d8f405", "name": "Social media content batch (5 posts)", "department": "Marketing", "level": "Task", "status": "", "progress": 0, "due": "2026-03-12", "owner": "Sahar", "parent_ids": ["30a5308b-6bc5-813f-9258-d618d0a2b291"], "notes": "", "categories": ["Content"]}, "30a5308b-6bc5-81f5-88c0-ec30d5b1cb48": {"id": "30a5308b-6bc5-81f5-88c0-ec30d5b1cb48", "name": "Weekly review #2", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-30", "owner": "Alon", "parent_ids": [], "notes": "", "categories": ["Business"]}, "30a5308b-6bc5-81fb-8ff1-cfbf1d4fca41": {"id": "30a5308b-6bc5-81fb-8ff1-cfbf1d4fca41", "name": "Weekly review: check all 3 planes progress", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-22", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-814a-b30b-d771dcbd8db7"], "notes": "End of week review. Check progress on all 3 planes. Update percentages. Plan next week.", "categories": ["Business"]}, "30b5308b-6bc5-800a-bc79-dd42df54f8cf": {"id": "30b5308b-6bc5-800a-bc79-dd42df54f8cf", "name": "Practice high terminal use", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-20", "owner": "Alon", "parent_ids": [], "notes": "", "categories": []}, "30b5308b-6bc5-8117-9cf0-fe3888615a11": {"id": "30b5308b-6bc5-8117-9cf0-fe3888615a11", "name": "Visual design: UI/UX website (Stitch + Lovable → Figma)", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-22", "owner": "Alon", "parent_ids": ["30a5308b-6bc5-8185-ab42-fac50e05db87"], "notes": "PRIORITY #1 today. Design the UI/UX website visuals using Google Stitch + Lovable. Export combined result to Figma. This Figma file becomes the R&D PRD with designs. Blocks: all Figma PRD tasks and Lovable-to-Figma export.", "categories": ["UI/UX"]}, "30b5308b-6bc5-81ca-bf1b-c1a109621252": {"id": "30b5308b-6bc5-81ca-bf1b-c1a109621252", "name": "Configure GitHub SSH on Mac", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-02-18", "owner": "Alon", "parent_ids": [], "notes": "", "categories": []}, "30b5308b-6bc5-81ff-9ea5-f9385e40f701": {"id": "30b5308b-6bc5-81ff-9ea5-f9385e40f701", "name": "GitHub integration to Claude Code", "department": "Product", "level": "Task", "status": "", "progress": 0, "due": "2026-03-10", "owner": "Alon", "parent_ids": [], "notes": "", "categories": []}, "30c5308b-6bc5-80b2-98d4-de088f1ea64f": {"id": "30c5308b-6bc5-80b2-98d4-de088f1ea64f", "name": "Claude code mvp", "department": "", "level": "Task", "status": "", "progress": 0, "due": "2026-03-12", "owner": "", "parent_ids": [], "notes": "", "categories": []}, "30d5308b-6bc5-8009-840d-e6a3975b6061": {"id": "30d5308b-6bc5-8009-840d-e6a3975b6061", "name": "Lovable to figma - 3 screens", "department": "", "level": "Task", "status": "", "progress": 0, "due": "2026-02-20", "owner": "", "parent_ids": ["30a5308b-6bc5-8185-ab42-fac50e05db87"], "notes": "", "categories": []}, "30f5308b-6bc5-80f2-9792-dffa5a2b7d87": {"id": "30f5308b-6bc5-80f2-9792-dffa5a2b7d87", "name": "Prd עם מתן", "department": "", "level": "Task", "status": "", "progress": 0, "due": "2026-02-23", "owner": "", "parent_ids": [], "notes": "", "categories": []}};
+var _activeId = null;
+
+function openPanel(id) {
+  var item = _items[id];
+  if (!item) return;
+  // Toggle if same item
+  if (_activeId === id) { closePanel(); return; }
+  _activeId = id;
+  // Deactivate old buttons, activate new
+  document.querySelectorAll('.n-btn.active').forEach(b => b.classList.remove('active'));
+  var card = document.querySelector('[data-nid="'+id+'"]');
+  if (card) { var btn = card.querySelector('.n-btn'); if(btn) btn.classList.add('active'); }
+  // Populate sidebar
+  document.getElementById('sb-title').textContent = item.name;
+  var nid = id.replace(/-/g, '');
+  document.getElementById('sb-link').href = 'https://notion.so/' + nid;
+  var colors = {Marketing:'#EA4335', Product:'#4285F4'};
+  var c = colors[item.department] || '#888';
+  var pct = Math.round((item.progress || 0) * 100);
+  var body = '';
+  // Meta row
+  body += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">';
+  if (item.level) body += '<span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;background:#e8eaed;color:#3c4043">' + item.level + '</span>';
+  if (item.department) body += '<span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;background:' + (item.department==='Marketing'?'#fce8e6':'#e8f0fe') + ';color:' + c + '">' + item.department + '</span>';
+  if (item.status) {
+    var sc = {'In Progress':'#4285F4','Done':'#34A853','Blocked':'#EA4335','Not Started':'#80868b'};
+    body += '<span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;color:' + (sc[item.status]||'#888') + ';border:1px solid ' + (sc[item.status]||'#888') + '30">' + item.status + '</span>';
+  }
+  body += '</div>';
+  // Progress
+  body += '<div class="sb-row"><div class="sb-label">Progress</div><div style="display:flex;align-items:center;gap:10px"><div class="sb-bar"><div class="sb-bar-fill" style="width:'+pct+'%;background:'+c+'"></div></div><span style="font-size:14px;font-weight:800;color:'+c+'">'+pct+'%</span></div></div>';
+  // Details
+  if (item.owner) body += '<div class="sb-row"><div class="sb-label">Owner</div><div class="sb-val">' + item.owner + '</div></div>';
+  if (item.due) body += '<div class="sb-row"><div class="sb-label">Due</div><div class="sb-val">' + item.due + '</div></div>';
+  if (item.notes) body += '<div class="sb-row"><div class="sb-label">Notes</div><div class="sb-val" style="white-space:pre-wrap">' + item.notes.replace(/</g,'&lt;') + '</div></div>';
+  // Children
+  var children = Object.values(_items).filter(function(x) { return x.parent_ids && x.parent_ids.indexOf(id) !== -1; });
+  if (children.length) {
+    var childLevel = item.level === 'Goal' ? 'Projects' : 'Tasks';
+    body += '<div class="sb-row"><div class="sb-label">' + childLevel + ' (' + children.length + ')</div><ul class="sb-children">';
+    children.forEach(function(ch) {
+      var chpct = Math.round((ch.progress||0)*100);
+      var sch = {'In Progress':'#4285F4','Done':'#34A853','Blocked':'#EA4335','Not Started':'#ccc'};
+      var dot = '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (sch[ch.status]||'#ccc') + ';margin-right:6px"></span>';
+      body += '<li onclick="openPanel(\'' + ch.id + '\')">' + dot + ch.name + ' <span style="float:right;font-size:10px;color:#80868b;font-weight:700">' + chpct + '%</span></li>';
+    });
+    body += '</ul></div>';
+  }
+  document.getElementById('sb-body').innerHTML = body;
+  document.body.classList.add('sb-open');
+}
+
+function closePanel() {
+  _activeId = null;
+  document.body.classList.remove('sb-open');
+  document.querySelectorAll('.n-btn.active').forEach(b => b.classList.remove('active'));
+}
+
+// Close on Escape
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closePanel(); if(typeof deselectAll==='function') deselectAll(); } });
+
+function filterBoard(owner) {
+  document.querySelectorAll('.bf').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.p0-card').forEach(card => {
+    if (owner === 'all' || card.dataset.owner === owner) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+</script>
+
+<!-- Chat FAB -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Team Chat">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+</button>
+
+<!-- Chat Window -->
+<div class="chat-win" id="chatWin">
+  <div class="chat-hdr">
+    <h3>VRT Chat</h3>
+    <select id="chatUser">
+      <option value="Alon">Alon</option>
+      <option value="Matan">Matan</option>
+      <option value="Sahar">Sahar</option>
+    </select>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="chat-msg bot"><div class="chat-bubble">Hey! Tell me what you got done. Example: "done with market research" or "started login PRD"</div></div>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="chatInput" placeholder="e.g. done with market research..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()">Send</button>
+  </div>
+</div>
+
+<script>
+var _chatOpen = false;
+function toggleChat() {
+  _chatOpen = !_chatOpen;
+  document.getElementById('chatWin').classList.toggle('open', _chatOpen);
+  if (_chatOpen) document.getElementById('chatInput').focus();
+}
+
+function sendChat() {
+  var input = document.getElementById('chatInput');
+  var msg = input.value.trim();
+  if (!msg) return;
+  var user = document.getElementById('chatUser').value;
+  input.value = '';
+
+  // Add user message to UI
+  addChatMsg(user, msg, 'user');
+
+  // Send to server
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name: user, message: msg})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    addChatMsg('VRT Bot', data.reply, 'bot');
+    if (data.updated) {
+      // Reload dashboard after a short delay to pick up regenerated HTML
+      setTimeout(function() { location.reload(); }, 2000);
+    }
+  })
+  .catch(function(err) {
+    addChatMsg('VRT Bot', 'Could not reach the server. Make sure dashboard-server is running on port 3001.', 'bot');
+  });
+}
+
+function addChatMsg(name, text, type) {
+  var msgs = document.getElementById('chatMsgs');
+  var now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.innerHTML = '<div class="chat-bubble">' + text.replace(/</g,'&lt;') + '</div><div class="chat-meta">' + name + ' &middot; ' + now + '</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// Load chat history on open
+(function() {
+  fetch('/api/chat').then(function(r){return r.json()}).then(function(history) {
+    history.forEach(function(m) {
+      addChatMsg(m.name, m.message, m.type === 'bot' ? 'bot' : 'user');
+    });
+  }).catch(function(){});
+})();
+
+// ═══ DRAG AND DROP ═══
+(function() {
+  var dragId = null;
+  var dragEl = null;
+
+  // Tool icons per category
+  var toolIcons = {
+    'UI/UX': ['Figma','Lovable'],
+    'R&D': ['GitHub','VS Code','Claude Code'],
+    'Content': ['Google Drive','YouTube'],
+    'YouTube': ['YouTube'],
+    'Creative Ads': ['Midjourney','Figma'],
+    'Business': ['Notion','Stripe'],
+    'Legal': ['Notion','Google Drive'],
+    'Infrastructure': ['GitHub','Netlify']
+  };
+  var toolColors = {
+    'Figma':'#A259FF','Lovable':'#FF6B6B','GitHub':'#333','VS Code':'#007ACC',
+    'Claude Code':'#D97706','Google Drive':'#4285F4','YouTube':'#FF0000',
+    'Midjourney':'#0D1117','Notion':'#000','Stripe':'#635BFF','Netlify':'#00C7B7'
+  };
+
+  // Show tool icons in sidebar when panel opens
+  var origOpenPanel = window.openPanel;
+  window.openPanel = function(id) {
+    origOpenPanel(id);
+    var item = _items[id];
+    if (!item) return;
+    // Build tool strip
+    var cats = item.categories || [];
+    var tools = [];
+    cats.forEach(function(c) { (toolIcons[c]||[]).forEach(function(t){ if(tools.indexOf(t)===-1) tools.push(t); }); });
+    if (!tools.length) tools = ['Notion']; // fallback
+    var strip = document.getElementById('sb-tools');
+    if (!strip) {
+      strip = document.createElement('div');
+      strip.id = 'sb-tools';
+      strip.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;padding:12px 20px 0;border-top:1px solid #e8eaed';
+      var sbBody = document.getElementById('sb-body');
+      sbBody.parentNode.insertBefore(strip, sbBody);
+    }
+    strip.innerHTML = tools.map(function(t) {
+      var c = toolColors[t]||'#888';
+      return '<span style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:'+c+'18;color:'+c+';border:1px solid '+c+'30">'+t+'</span>';
+    }).join('');
+  };
+
+  // Event delegation for drag start
+  document.addEventListener('dragstart', function(e) {
+    var card = e.target.closest('[data-nid][draggable]');
+    if (!card) return;
+    dragId = card.dataset.nid;
+    dragEl = card;
+    window._lastDrag = Date.now();
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragId);
+    // Highlight all drop zones
+    document.querySelectorAll('.drop-zone').forEach(function(z) {
+      z.style.outline = '2px dashed #4285F440';
+      z.style.outlineOffset = '-2px';
+    });
+  });
+
+  document.addEventListener('dragend', function(e) {
+    if (dragEl) dragEl.classList.remove('dragging');
+    dragId = null;
+    dragEl = null;
+    document.querySelectorAll('.drop-zone').forEach(function(z) {
+      z.classList.remove('drag-over');
+      z.style.outline = '';
+      z.style.outlineOffset = '';
+    });
+  });
+
+  document.addEventListener('dragover', function(e) {
+    var zone = e.target.closest('.drop-zone');
+    if (!zone || !dragId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    // Clear other highlights
+    document.querySelectorAll('.drop-zone.drag-over').forEach(function(z) { z.classList.remove('drag-over'); });
+    zone.classList.add('drag-over');
+  });
+
+  document.addEventListener('dragleave', function(e) {
+    var zone = e.target.closest('.drop-zone');
+    if (zone) zone.classList.remove('drag-over');
+  });
+
+  document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    var zone = e.target.closest('.drop-zone');
+    if (!zone || !dragId) return;
+    zone.classList.remove('drag-over');
+
+    var updates = {};
+    // Determine what changed based on drop zone attributes
+    if (zone.dataset.dropStatus) {
+      updates.status = zone.dataset.dropStatus;
+    }
+    if (zone.dataset.dropOwner) {
+      updates.owner = zone.dataset.dropOwner;
+    }
+    if (zone.dataset.dropDue) {
+      updates.due = zone.dataset.dropDue;
+    }
+
+    if (!Object.keys(updates).length) return;
+
+    // Optimistic UI: move card visually
+    if (dragEl) {
+      dragEl.classList.add('drop-flash');
+      if (updates.status === 'Done') {
+        dragEl.style.opacity = '.5';
+        dragEl.style.textDecoration = 'line-through';
+      }
+    }
+
+    // Send to server
+    fetch('/api/move', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({pageId: dragId, updates: updates})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        // Show success toast
+        showToast('Moved: ' + (updates.status || updates.owner || updates.due));
+        // Reload after regen
+        setTimeout(function() { location.reload(); }, 2500);
+      } else {
+        showToast('Error: ' + (data.error || 'unknown'), true);
+      }
+    })
+    .catch(function() {
+      showToast('Server offline — start dashboard-server', true);
+    });
+  });
+
+  // Toast notification
+  function showToast(msg, isError) {
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15);transition:opacity .3s;font-family:Inter,sans-serif;';
+    t.style.background = isError ? '#fce8e6' : '#e6f4ea';
+    t.style.color = isError ? '#c5221f' : '#137333';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function() { t.style.opacity = '0'; }, 2000);
+    setTimeout(function() { t.remove(); }, 2500);
+  }
+
+  // Touch support for mobile drag
+  var touchDragId = null;
+  document.addEventListener('touchstart', function(e) {
+    var card = e.target.closest('[data-nid][draggable]');
+    if (card) touchDragId = card.dataset.nid;
+  }, {passive: true});
+  document.addEventListener('touchend', function(e) {
+    if (!touchDragId) return;
+    var touch = e.changedTouches[0];
+    var el = document.elementFromPoint(touch.clientX, touch.clientY);
+    var zone = el ? el.closest('.drop-zone') : null;
+    if (zone && zone.dataset.dropStatus) {
+      fetch('/api/move', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({pageId: touchDragId, updates: {status: zone.dataset.dropStatus}})
+      }).then(function() { setTimeout(function(){ location.reload(); }, 2000); });
+    }
+    touchDragId = null;
+  });
+})();
+</script>
+<script>
+var _selectedId = null;
+var _catToConn = {
+  'UI/UX': ['Design','Sites/Web'],
+  'R&D': ['Code/Dev','Automation'],
+  'Content': ['Docs/Files','Sites/Web'],
+  'Creative Ads': ['Design','AI/Generation'],
+  'YouTube': ['Social Media','Sites/Web'],
+  'Business': ['Docs/Files','Automation'],
+  'Legal': ['Docs/Files'],
+  'Infrastructure': ['Code/Dev','Automation','Hosting']
+};
+
+function selectCard(id) {
+  var card = document.querySelector('[data-nid="'+id+'"]');
+  if (!card || card.classList.contains('dragging')) return;
+  if (id === _selectedId) { deselectAll(); return; }
+  deselectAll(true);
+  _selectedId = id;
+  card.classList.add('selected','expanded');
+  var tree = buildStickyTree(id);
+  if (tree) card.appendChild(tree);
+  filterToolStack(id);
+}
+
+function deselectAll(silent) {
+  _selectedId = null;
+  document.querySelectorAll('.selected,.expanded').forEach(function(el) {
+    el.classList.remove('selected','expanded');
+  });
+  document.querySelectorAll('.sticky-tree').forEach(function(el) { el.remove(); });
+  if (!silent) {
+    document.querySelectorAll('.tool-card').forEach(function(el) { el.classList.remove('tool-dimmed'); });
+    var tTitle = document.getElementById('tool-stack-title');
+    if (tTitle) {
+      var tc = document.querySelectorAll('.tool-card').length;
+      tTitle.innerHTML = 'Tool Stack <span class="group-badge" style="background:#202124">' + tc + ' tools</span>';
+    }
+  }
+}
+
+function buildStickyTree(id) {
+  var item = _items[id];
+  if (!item) return null;
+  var container = document.createElement('div');
+  container.className = 'sticky-tree';
+  var sc = {'In Progress':'#4285F4','Done':'#34A853','Blocked':'#EA4335','Not Started':'#ccc'};
+  var lc = {'Goal':'#34A853','Project':'#4285F4','Task':'#EA4335'};
+
+  function mkSticky(it, isCur, isPar) {
+    var s = document.createElement('div');
+    s.className = 'sticky' + (isCur ? ' current' : '') + (isPar ? ' s-parent' : '');
+    s.setAttribute('data-page-id', it.id);
+    var dot = '<span class="st-dot" style="background:'+(sc[it.status]||'#ccc')+'"></span>';
+    var lvl = '<span class="st-level" style="background:'+(lc[it.level]||'#e8eaed')+'18;color:'+(lc[it.level]||'#5f6368')+'">'+(it.level||'')+'</span>';
+    var nm = '<span class="st-name">'+(it.name||'').replace(/</g,'&lt;')+'</span>';
+    s.innerHTML = dot + nm + lvl;
+    if (!isCur) s.onclick = function(e) { e.stopPropagation(); navigateToItem(it.id); };
+    return s;
+  }
+
+  // Walk up the parent chain
+  var parents = [];
+  var cur = item;
+  while (cur.parent_ids && cur.parent_ids.length) {
+    var pid = cur.parent_ids[0];
+    var par = _items[pid];
+    if (!par) break;
+    parents.unshift(par);
+    cur = par;
+  }
+
+  // Render parent chain
+  parents.forEach(function(p) {
+    var lb = document.createElement('div');
+    lb.className = 'st-label';
+    lb.textContent = p.level;
+    container.appendChild(lb);
+    container.appendChild(mkSticky(p, false, true));
+  });
+
+  // Find siblings (same parent, same level)
+  var siblings = [];
+  if (item.parent_ids && item.parent_ids.length) {
+    var parentId = item.parent_ids[0];
+    siblings = Object.values(_items).filter(function(x) {
+      return x.parent_ids && x.parent_ids.indexOf(parentId) !== -1 && x.level === item.level;
+    });
+  }
+
+  // Render siblings section (includes self, highlighted)
+  if (siblings.length > 0) {
+    var lb = document.createElement('div');
+    lb.className = 'st-label';
+    lb.textContent = item.level + 's';
+    container.appendChild(lb);
+    siblings.forEach(function(sib) {
+      container.appendChild(mkSticky(sib, sib.id === id, false));
+    });
+  } else {
+    container.appendChild(mkSticky(item, true, false));
+  }
+
+  // Find children
+  var children = Object.values(_items).filter(function(x) {
+    return x.parent_ids && x.parent_ids.indexOf(id) !== -1;
+  });
+  if (children.length) {
+    var childLvl = item.level === 'Goal' ? 'Projects' : 'Tasks';
+    var lb = document.createElement('div');
+    lb.className = 'st-label';
+    lb.textContent = childLvl;
+    container.appendChild(lb);
+    children.forEach(function(ch) {
+      container.appendChild(mkSticky(ch, false, false));
+    });
+  }
+
+  return container;
+}
+
+function filterToolStack(id) {
+  var item = _items[id];
+  if (!item) return;
+  var cats = item.categories || [];
+  var relevant = {};
+  cats.forEach(function(c) {
+    (_catToConn[c]||[]).forEach(function(conn) { relevant[conn] = true; });
+  });
+  var hasRelevant = Object.keys(relevant).length > 0;
+
+  document.querySelectorAll('.tool-card').forEach(function(tc) {
+    var conns = (tc.dataset.connections || '').split(',');
+    var isCore = tc.dataset.core === 'true';
+    var match = isCore;
+    if (hasRelevant && !match) {
+      conns.forEach(function(c) { if (relevant[c]) match = true; });
+    }
+    if (!hasRelevant) match = true;
+    tc.classList.toggle('tool-dimmed', !match);
+  });
+
+  var tTitle = document.getElementById('tool-stack-title');
+  if (tTitle) {
+    var shown = document.querySelectorAll('.tool-card:not(.tool-dimmed)').length;
+    tTitle.innerHTML = 'Tools for <span style="color:#6C3AED">' + (item.name||'').replace(/</g,'&lt;') + '</span> <span class="group-badge" style="background:#6C3AED">' + shown + ' relevant</span>';
+  }
+}
+
+function navigateToItem(id) {
+  deselectAll();
+  var card = document.querySelector('[data-nid="'+id+'"]');
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(function() { selectCard(id); }, 500);
+}
+
+// Card click handler via event delegation
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.n-btn')) return;
+  if (e.target.closest('.sb')) return;
+  if (e.target.closest('.sticky')) return;
+  var card = e.target.closest('.gc[data-nid], .pc[data-nid], .tk[data-nid]');
+  if (card) {
+    if (window._lastDrag && Date.now() - window._lastDrag < 300) return;
+    selectCard(card.dataset.nid);
+    return;
+  }
+  if (_selectedId && !e.target.closest('.tool-card, .sticky-tree')) {
+    deselectAll();
+  }
+});
+</script>
+</div></div></body></html>
