@@ -1,6 +1,6 @@
 {
   "generated_from": "Notion \u2192 Tool Inventory",
-  "generated_at": "2026-02-22T14:01:18.552867",
+  "generated_at": "2026-02-23T08:40:00.000000",
   "tools": [
     {
       "name": "Claude Code",
@@ -22,7 +22,7 @@
         "Design"
       ],
       "core": true,
-      "integrated": false
+      "integrated": true
     },
     {
       "name": "Lovable",
@@ -64,7 +64,7 @@
         "Claude Code"
       ],
       "core": false,
-      "integrated": false
+      "integrated": true
     },
     {
       "name": "Google Drive",
@@ -127,7 +127,7 @@
         "Slack"
       ],
       "core": false,
-      "integrated": false
+      "integrated": true
     },
     {
       "name": "Stripe",
